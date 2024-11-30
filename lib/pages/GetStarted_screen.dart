@@ -7,111 +7,96 @@ class GetStartedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background Image
-            Positioned.fill(
-              child: Image.network(
-                'https://thumbs.dreamstime.com/b/white-golf-balls-against-green-background-pattern-vertical-wallpaper-poster-flyer-events-advertisement-template-concept-sport-321910912.jpg', // Replace with your image asset
-                fit: BoxFit.cover,
+      body: Stack(
+        children: [
+          // Full-Screen Background
+          Positioned.fill(
+            child: Image.network(
+              'https://thumbs.dreamstime.com/b/white-golf-balls-against-green-background-pattern-vertical-wallpaper-poster-flyer-events-advertisement-template-concept-sport-321910912.jpg',
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // Gradient Overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.8),
+                    Colors.black.withOpacity(0.6),
+                    Colors.transparent,
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
               ),
             ),
+          ),
 
-            // Content Overlay
-            Column(
+          // Content
+          SafeArea(
+            child: Column(
               children: [
                 const Spacer(flex: 1),
 
-                // App Logo
+                // App Icon
                 Align(
-                  alignment: Alignment.topCenter,
+                  alignment: Alignment.center,
                   child: Container(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.5),
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.tealAccent.withOpacity(0.5),
+                          blurRadius: 15,
+                        ),
+                      ],
                     ),
                     child: const Icon(
                       Icons.sports_golf_rounded,
-                      color: Colors.white,
                       size: 100,
+                      color: Colors.white,
                     ),
                   ),
                 ),
 
-                // App Title
+                // Title
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  padding: EdgeInsets.all(16.0),
                   child: Text(
                     'Mini Golf',
                     style: TextStyle(
-                      fontSize: 40,
+                      fontSize: 38,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
-                      shadows: [
-                        Shadow(
-                          color: Colors.tealAccent,
-                          blurRadius: 10,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
+                      color: Colors.tealAccent,
+                      letterSpacing: 2,
                     ),
                   ),
                 ),
 
-                // App Subtitle
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 10.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.info_outline,
-                        color: Colors.tealAccent,
-                        size: 40,
-                      ),
-                      title: const Text(
-                        'Modern Design',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Text(
-                        'Experience a sleek and modern design with our app.',
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                          fontSize: 14,
-                        ),
-                      ),
+                // Subtitle
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Text(
+                    'Experience the joy of golf anytime, anywhere!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
                     ),
                   ),
                 ),
 
-                const Spacer(flex: 1),
+                const SizedBox(height: 20),
 
-                // Feature Cards
+                // Feature Cards Section
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildFeatureCard(
                         icon: Icons.sports_golf,
@@ -134,22 +119,21 @@ class GetStartedScreen extends StatelessWidget {
                   ),
                 ),
 
-                const Spacer(flex: 2),
+                const Spacer(flex: 1),
 
                 // Get Started Button
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: CupertinoButton(
                     onPressed: () {
-                      // Navigate to the next screen
-                      Get.toNamed(Routes.login);
+                      Get.offAllNamed(Routes.login);
                     },
                     color: Colors.tealAccent,
                     borderRadius: BorderRadius.circular(30),
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Text(
                           'Get Started',
                           style: TextStyle(
@@ -158,11 +142,10 @@ class GetStartedScreen extends StatelessWidget {
                             color: Colors.black,
                           ),
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(width: 8),
                         Icon(
                           CupertinoIcons.arrow_right,
                           color: Colors.black,
-                          size: 20,
                         ),
                       ],
                     ),
@@ -172,26 +155,28 @@ class GetStartedScreen extends StatelessWidget {
                 const Spacer(flex: 1),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  // Method for Feature Cards
-  Widget _buildFeatureCard(
-      {required IconData icon, required String title, required Color color}) {
+  // Feature Card Builder
+  Widget _buildFeatureCard({
+    required IconData icon,
+    required String title,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16.0),
-      width: 120,
+      width: 140,
       decoration: BoxDecoration(
-        color: Colors.grey[900]!.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.black.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.6),
-            blurRadius: 15,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
           ),
         ],
       ),
@@ -199,7 +184,7 @@ class GetStartedScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 40, color: color),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
             title,
             textAlign: TextAlign.center,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:minigolf/pages/GetStarted_screen.dart';
 import 'package:minigolf/pages/HomeScreen.dart';
+import 'package:minigolf/pages/LeaderBoard_screen.dart';
 import 'package:minigolf/pages/Login_screen.dart';
+import 'package:minigolf/pages/PlayNow_screen.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class RouteGenerator {
@@ -16,9 +18,14 @@ class RouteGenerator {
         widgetScreen = LoginScreen();
         break;
       case Routes.home:
-        widgetScreen = Homescreen();
+        widgetScreen = const Homescreen();
         break;
-
+      case Routes.playnow:
+        widgetScreen = PlayNowScreen();
+        break;
+      case Routes.leaderboard:
+        widgetScreen = LeaderBoardScreen();
+        break;
       default:
         widgetScreen = _errorRoute();
     }
