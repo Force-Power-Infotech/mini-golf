@@ -4,6 +4,7 @@ import 'package:minigolf/pages/HomeScreen.dart';
 import 'package:minigolf/pages/LeaderBoard_screen.dart';
 import 'package:minigolf/pages/Login_screen.dart';
 import 'package:minigolf/pages/PlayNow_screen.dart';
+import 'package:minigolf/pages/Scoring_screen.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class RouteGenerator {
@@ -25,6 +26,9 @@ class RouteGenerator {
         break;
       case Routes.leaderboard:
         widgetScreen = LeaderBoardScreen();
+        break;
+      case Routes.scoreboard:
+        widgetScreen = ScoringScreen();
         break;
       default:
         widgetScreen = _errorRoute();

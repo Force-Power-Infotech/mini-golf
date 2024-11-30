@@ -4,4 +4,5 @@ class Routes {
   static const String getStarted = '/getStarted';
   static const String playnow = '/playnow';
   static const String leaderboard = '/leaderboard';
+  static const String scoreboard = '/scoreboard';
 }
