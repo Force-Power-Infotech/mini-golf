@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:minigolf/pages/GetStarted_screen.dart';
-import 'package:minigolf/pages/HomeScreen.dart';
-import 'package:minigolf/pages/LeaderBoard_screen.dart';
-import 'package:minigolf/pages/Login_screen.dart';
-import 'package:minigolf/pages/PlayNow_screen.dart';
-import 'package:minigolf/pages/Scoring_screen.dart';
+import 'package:minigolf/pages/get_started_screen.dart';
+import 'package:minigolf/pages/home_screen.dart';
+import 'package:minigolf/pages/leader_board_screen.dart';
+import 'package:minigolf/pages/login_screen.dart';
+import 'package:minigolf/pages/play_now_screen.dart';
+import 'package:minigolf/pages/scoring_screen.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class RouteGenerator {
@@ -13,22 +13,22 @@ class RouteGenerator {
 
     switch (settings.name) {
       case Routes.getStarted:
-        widgetScreen = GetStartedScreen();
+        widgetScreen = const GetStartedScreen();
         break;
       case Routes.login:
-        widgetScreen = LoginScreen();
+        widgetScreen = const LoginScreen();
         break;
       case Routes.home:
         widgetScreen = const Homescreen();
         break;
       case Routes.playnow:
-        widgetScreen = PlayNowScreen();
+        widgetScreen = const PlayNowScreen();
         break;
       case Routes.leaderboard:
         widgetScreen = LeaderBoardScreen();
         break;
       case Routes.scoreboard:
-        widgetScreen = ScoringScreen();
+        widgetScreen = const ScoringScreen();
         break;
       default:
         widgetScreen = _errorRoute();

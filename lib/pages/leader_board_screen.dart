@@ -13,7 +13,7 @@ class LeaderBoardScreen extends StatelessWidget {
     {'name': 'Player 5', 'score': 69, 'bixrdies': 4, 'pars': 11},
   ];
 
-  const LeaderBoardScreen({super.key});
+   LeaderBoardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

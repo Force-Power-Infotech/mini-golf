@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_navigation/get_navigation.dart';
-import 'package:minigolf/pages/HomeScreen.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class PlayNowScreen extends StatefulWidget {
   const PlayNowScreen({super.key});
 
   @override
-  _PlayNowScreenState createState() => _PlayNowScreenState();
+  State<PlayNowScreen> createState() => _PlayNowScreenState();
 }
 
 class _PlayNowScreenState extends State<PlayNowScreen> {

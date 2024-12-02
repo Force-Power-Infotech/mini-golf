@@ -5,7 +5,7 @@ class ScoringScreen extends StatefulWidget {
   const ScoringScreen({super.key});
 
   @override
-  _ScoringScreenState createState() => _ScoringScreenState();
+  State<ScoringScreen> createState() => _ScoringScreenState();
 }
 
 class _ScoringScreenState extends State<ScoringScreen> {
