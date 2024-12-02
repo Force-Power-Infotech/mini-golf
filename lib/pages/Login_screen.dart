@@ -4,6 +4,8 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -35,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Welcome Text
-              Text(
+              const Text(
                 'Welcome Back!',
                 style: TextStyle(
                   color: Colors.white,
@@ -58,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.grey[850],
@@ -68,14 +70,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: Icon(Icons.phone, color: Colors.tealAccent),
+                    prefixIcon: const Icon(Icons.phone, color: Colors.tealAccent),
                   ),
                 ),
               if (_isOtpSent)
                 TextField(
                   controller: _otpController,
                   keyboardType: TextInputType.number,
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: Colors.grey[850],
@@ -85,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: Icon(Icons.lock, color: Colors.tealAccent),
+                    prefixIcon: const Icon(Icons.lock, color: Colors.tealAccent),
                   ),
                 ),
 
@@ -113,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Text(
                     _isOtpSent ? 'Submit OTP' : 'Get OTP',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart'; // Add the confetti package
 
 class ScoringScreen extends StatefulWidget {
+  const ScoringScreen({super.key});
+
   @override
   _ScoringScreenState createState() => _ScoringScreenState();
 }
@@ -61,7 +63,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                 blastDirectionality: BlastDirectionality.explosive,
                 emissionFrequency: 0.05,
                 numberOfParticles: 30,
-                colors: [Colors.red, Colors.green, Colors.blue, Colors.yellow],
+                colors: const [Colors.red, Colors.green, Colors.blue, Colors.yellow],
               ),
             ),
             AlertDialog(

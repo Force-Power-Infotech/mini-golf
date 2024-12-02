@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:minigolf/pages/GetStarted_screen.dart';
 import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/routes/routes_generator.dart';
 

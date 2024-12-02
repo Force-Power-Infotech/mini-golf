@@ -13,6 +13,8 @@ class LeaderBoardScreen extends StatelessWidget {
     {'name': 'Player 5', 'score': 69, 'bixrdies': 4, 'pars': 11},
   ];
 
+  const LeaderBoardScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Sort players by score (lowest score ranks higher)
@@ -58,7 +60,7 @@ class LeaderBoardScreen extends StatelessWidget {
                   final rank = entry.key + 1;
                   final player = entry.value;
                   return _buildLeaderboardRow(rank, player, rank <= 3);
-                }).toList(),
+                }),
               ],
             ),
           ),
@@ -135,7 +137,7 @@ class LeaderBoardScreen extends StatelessWidget {
           ),
           Text(
             player['name'],
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

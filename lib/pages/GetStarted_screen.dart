@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class GetStartedScreen extends StatelessWidget {
+  const GetStartedScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,9 +133,9 @@ class GetStartedScreen extends StatelessWidget {
                     color: Colors.tealAccent,
                     borderRadius: BorderRadius.circular(30),
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Text(
                           'Get Started',
                           style: TextStyle(

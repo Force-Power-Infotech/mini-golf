@@ -5,6 +5,8 @@ import 'package:minigolf/pages/HomeScreen.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class PlayNowScreen extends StatefulWidget {
+  const PlayNowScreen({super.key});
+
   @override
   _PlayNowScreenState createState() => _PlayNowScreenState();
 }
@@ -182,7 +184,7 @@ class AnimatedPlayerCard extends StatelessWidget {
   final Player player;
   final VoidCallback onRemove;
 
-  const AnimatedPlayerCard({required this.player, required this.onRemove});
+  const AnimatedPlayerCard({super.key, required this.player, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {

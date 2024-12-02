@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_navigation/get_navigation.dart';
-import 'package:minigolf/pages/GetStarted_screen.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class Homescreen extends StatefulWidget {
