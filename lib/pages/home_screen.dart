@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/get_core.dart';
-import 'package:get/get_navigation/get_navigation.dart';
+import 'package:get/get.dart';
+import 'package:flutter_web_vibrate/flutter_web_vibrate.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class Homescreen extends StatefulWidget {
@@ -11,6 +11,15 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
+  void _vibratePattern() {
+    try {
+      // Vibrate in a rhythm
+      FlutterWebVibrate.vibrate(200); // Vibrate for 200 milliseconds
+    } catch (e) {
+      debugPrint('Vibration not supported or error occurred: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,18 +66,6 @@ class _HomescreenState extends State<Homescreen> {
                       ),
                     ],
                   ),
-                  // AppBar Actions
-                  // Row(
-                  //   children: [
-                  //     IconButton(
-                  //       icon: const Icon(
-                  //         Icons.notifications_none,
-                  //         color: Colors.white,
-                  //       ),
-                  //       onPressed: () {},
-                  //     ),
-                  //   ],
-                  // ),
                 ],
               ),
             ),
@@ -127,9 +124,10 @@ class _HomescreenState extends State<Homescreen> {
                       children: [
                         _buildFeatureCard(
                           icon: Icons.sports_golf,
-                          title: 'Play Now',
+                          title: 'Get Started',
                           color: Colors.tealAccent,
                           onTap: () {
+                            _vibratePattern(); // Trigger vibration
                             Get.toNamed(Routes.playnow);
                           },
                         ),
@@ -141,80 +139,10 @@ class _HomescreenState extends State<Homescreen> {
                             Get.toNamed(Routes.leaderboard);
                           },
                         ),
-                        // _buildFeatureCard(
-                        //   icon: Icons.group,
-                        //   title: 'Challenge Friends',
-                        //   color: Colors.blueAccent,
-                        //   onTap: () {},
-                        // ),
-                        // _buildFeatureCard(
-                        //   icon: Icons.emoji_events,
-                        //   title: 'Tournaments',
-                        //   color: Colors.redAccent,
-                        //   onTap: () {},
-                        // ),
                       ],
                     ),
 
                     const SizedBox(height: 24),
-
-                    // News Section
-                    const Text(
-                      "Latest Updates",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              image: const DecorationImage(
-                                image: NetworkImage(
-                                    'https://via.placeholder.com/150'),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "New Tournament: Mini Golf Masters",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  "Join now to compete with the best players!",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
               ),

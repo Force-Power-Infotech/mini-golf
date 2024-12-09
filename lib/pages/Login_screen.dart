@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:just_audio/just_audio.dart'; // Use just_audio
 import 'package:minigolf/routes/routes.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,15 +13,34 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
+  final AudioPlayer _audioPlayer =
+      AudioPlayer(); // Initialize just_audio player
   bool _isOtpSent = false;
 
+  @override
+  void dispose() {
+    _audioPlayer.dispose(); // Dispose the player when not needed
+    super.dispose();
+  }
+
+  Future<void> _playSound(String soundPath) async {
+    try {
+      await _audioPlayer.setAsset(soundPath); // Load the sound asset
+      await _audioPlayer.play(); // Play the sound
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
+  }
+
   void _sendOtp() {
+    _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
     setState(() {
       _isOtpSent = true;
     });
   }
 
   void _submitOtp() {
+    _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
     // Handle OTP submission logic here
   }
 
@@ -69,7 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: const Icon(Icons.phone, color: Colors.tealAccent),
+                    prefixIcon:
+                        const Icon(Icons.phone, color: Colors.tealAccent),
                   ),
                 ),
               if (_isOtpSent)
@@ -86,7 +107,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    prefixIcon: const Icon(Icons.lock, color: Colors.tealAccent),
+                    prefixIcon:
+                        const Icon(Icons.lock, color: Colors.tealAccent),
                   ),
                 ),
 
