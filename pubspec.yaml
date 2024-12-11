@@ -41,6 +41,7 @@ dependencies:
   just_audio: ^0.9.42
   dio: ^5.7.0
   sizer: ^3.0.5
+  get_storage: ^2.1.1
   # seongnam: ^0.0.2
   # flutter_web_vibrate: ^0.0.1
 

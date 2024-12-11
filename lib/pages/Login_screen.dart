@@ -1,10 +1,13 @@
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart'; // Use just_audio
 import 'package:minigolf/api.dart';
+import 'package:minigolf/class/user_class.dart';
 import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/routes/routes.dart';
+import 'package:minigolf/storage/get_storage.dart';
 import 'package:minigolf/widgets/app_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -74,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
         AppWidgets.successSnackBar(content: data['message']);
         setState(() {
           _isOtpSent = true;
+          userId = data['userID'].toString();
         });
       } else {
         AppWidgets.errorSnackBar(content: data['message']);
@@ -83,9 +87,37 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void _submitOtp() {
+  Future<void> _submitOtp() async {
     _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
     // Handle OTP submission logic here
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'verifyOTP',
+        'userID': userId,
+        'otp': _otpController.text,
+      },
+    ).then((response) async {
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        Storage().storeUserDate(UserClass.fromJson(data));
+        AppWidgets.successSnackBar(content: data['message']);
+        setState(() {
+          _isOtpSent = true;
+        });
+        Get.toNamed(Routes.home);
+        // Use store data from storage below
+        // Assuming you have a method to store data in local storage
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    }).catchError((e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
   }
 
   @override
@@ -165,7 +197,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     if (_isOtpSent) {
                       _submitOtp();
-                      Get.toNamed(Routes.home);
                     } else {
                       _sendOtp();
                     }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:minigolf/class/user_class.dart';
 import 'package:minigolf/routes/routes.dart';
+import 'package:minigolf/storage/get_storage.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -10,6 +12,7 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
+  UserClass user = Storage().getUserData();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,7 +34,7 @@ class _HomescreenState extends State<Homescreen> {
                   bottomRight: Radius.circular(24),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // AppBar Title
@@ -48,7 +51,7 @@ class _HomescreenState extends State<Homescreen> {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        "Welcome back, Player!",
+                        "Welcome back, ${user?.name}!",
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 14,

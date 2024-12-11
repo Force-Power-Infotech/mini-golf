@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:minigolf/api.dart';
+import 'package:minigolf/class/user_class.dart';
+import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/routes/routes.dart';
+import 'package:minigolf/storage/get_storage.dart';
+import 'package:minigolf/widgets/app_widgets.dart';
 
 class PlayNowScreen extends StatefulWidget {
   const PlayNowScreen({super.key});
@@ -13,10 +18,50 @@ class PlayNowScreen extends StatefulWidget {
 
 class _PlayNowScreenState extends State<PlayNowScreen> {
   List<Player> players = [];
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  Future<void> _playSound(String soundPath) async {
+    try {
+      await _audioPlayer.setAsset(soundPath); // Load the sound asset
+      await _audioPlayer.play(); // Play the sound
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
+  }
+
+  UserClass user = Storage().getUserData();
+  Future<void> _createTeam() async {
+    _playSound(
+        'assets/sounds/mixkit-epic-orchestra-transition-2290.mp3'); // Play sound
+    // Handle OTP submission logic here
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'createTeam',
+        'createdBy': user.userID,
+        'members': players
+            .map((player) => player.name.isEmpty ? 'Unknown' : player.name)
+            .toList(),
+      },
+    ).then((response) async {
+      if (response == null || response.data == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        AppWidgets.successSnackBar(content: data['message']);
+        Get.toNamed(Routes.scoreboard);
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    }).catchError((e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
+  }
 
   void _addPlayer() {
     setState(() {
-      players.add(Player());
+      players.add(Player(name: '', imageUrl: ''));
     });
   }
 
@@ -145,7 +190,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: () => Get.toNamed(Routes.scoreboard),
+                        onPressed: () => _createTeam(),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           shape: RoundedRectangleBorder(
@@ -193,17 +238,17 @@ class AnimatedPlayerCard extends StatelessWidget {
     required this.onRemove,
   });
 
-  Future<void> _playSound(String soundPath) async {
-    final audioPlayer = AudioPlayer(); // Create an AudioPlayer instance
-    try {
-      await audioPlayer.setAsset(soundPath); // Load the sound asset
-      await audioPlayer.play(); // Play the sound
-    } catch (e) {
-      debugPrint('Error playing sound: $e');
-    } finally {
-      audioPlayer.dispose(); // Dispose of the player after use
-    }
-  }
+  // Future<void> _playSound(String soundPath) async {
+  //   final audioPlayer = AudioPlayer(); // Create an AudioPlayer instance
+  //   try {
+  //     await audioPlayer.setAsset(soundPath); // Load the sound asset
+  //     await audioPlayer.play(); // Play the sound
+  //   } catch (e) {
+  //     debugPrint('Error playing sound: $e');
+  //   } finally {
+  //     audioPlayer.dispose(); // Dispose of the player after use
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -271,8 +316,8 @@ class AnimatedPlayerCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.redAccent),
                 onPressed: () async {
-                  await _playSound(
-                      'assets/sounds/mixkit-air-in-a-hit-2161.mp3'); // Play delete sound
+                  // await _playSound(
+                  //     'assets/sounds/mixkit-air-in-a-hit-2161.mp3'); // Play delete sound
                   onRemove(); // Remove player
                 },
               ),
