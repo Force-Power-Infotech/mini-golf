@@ -8,10 +8,12 @@ import 'package:minigolf/widgets/app_widgets.dart';
 
 class ApiService {
   static final BaseOptions options = BaseOptions(
-    baseUrl: 'https://your-base-url.com', // Set your base URL here
     receiveTimeout: const Duration(seconds: 90),
     connectTimeout: const Duration(seconds: 90),
-    followRedirects: true,
+    validateStatus: (status) {
+      // Allow redirection codes to pass
+      return status != null && status < 500;
+    },
   );
 
   final Dio _dio = Dio(options);
@@ -39,7 +41,7 @@ class ApiService {
         return handler.next(response);
       },
       // Log Error Details
-      onError: (DioError error, ErrorInterceptorHandler handler) {
+      onError: (DioException error, ErrorInterceptorHandler handler) {
         debugPrint('*** Error ***');
         debugPrint('URI: ${error.requestOptions.uri}');
         debugPrint('Message: ${error.message}');
@@ -77,8 +79,14 @@ class ApiService {
     try {
       // Convert data to FormData
       final formData = FormData.fromMap(data ?? {});
-      final response = await _dio.post(endpoint, data: formData);
-      log('POST Response: ${response.data}');
+      Response response = await _dio.post(endpoint, data: formData);
+      if (response.statusCode == 302) {
+        String? redirectUrl = response.headers['location']?.first;
+
+        if (redirectUrl != null) {
+          response = await _dio.get(redirectUrl);
+        }
+      }
       loader.Get.back(closeOverlays: true, canPop: false);
       return response;
     } catch (e) {

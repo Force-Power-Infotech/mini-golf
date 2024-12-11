@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart'; // Use just_audio
@@ -40,43 +39,52 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _sendOtp() async {
-    _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
-    var data = dio.FormData.fromMap({'q': 'login', 'mobileNo': '9330262571'});
-
-    var dioInstance = dio.Dio();
-    var response = await dioInstance.request(
-      Api.baseUrl,
-      options: dio.Options(
-        method: 'POST',
-      ),
-      data: data,
-    );
-
-    if (response.statusCode == 200) {
-      log(json.encode(response.data));
-    } else {
-      log(response.statusMessage ?? 'Unknown error');
-    }
-  }
   // void _sendOtp() async {
   //   _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
-  //   final response = await ApiService().post(
+  //   var data = dio.FormData.fromMap({'q': 'login', 'mobileNo': '9330262571'});
+
+  //   var dioInstance = dio.Dio();
+  //   var response = await dioInstance.request(
   //     Api.baseUrl,
-  //     data: {
-  //       'q': 'login',
-  //       'mobileNo': _phoneController.text,
-  //     },
+  //     options: dio.Options(
+  //       method: 'POST',
+  //     ),
+  //     data: data,
   //   );
 
-  //   if (response?.statusCode == 200) {
-  //     setState(() {
-  //       _isOtpSent = true;
-  //     });
+  //   if (response.statusCode == 200) {
+  //     log(json.encode(response.data));
   //   } else {
-  //     log(response?.statusMessage ?? 'Unknown error');
+  //     log(response.statusMessage ?? 'Unknown error');
   //   }
   // }
+  void _sendOtp() async {
+    _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'login',
+        'mobileNo': _phoneController.text,
+      },
+    ).then((response) {
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        AppWidgets.successSnackBar(content: data['message']);
+        setState(() {
+          _isOtpSent = true;
+        });
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    }).catchError((e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
+  }
+
   void _submitOtp() {
     _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
     // Handle OTP submission logic here
