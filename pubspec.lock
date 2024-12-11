@@ -73,6 +73,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  dio:
+    dependency: "direct main"
+    description:
+      name: dio
+      sha256: "5598aa796bbf4699afd5c67c0f5f6e2ed542afc956884b9cd58c306966efc260"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.7.0"
+  dio_web_adapter:
+    dependency: transitive
+    description:
+      name: dio_web_adapter
+      sha256: "33259a9276d6cea88774a0000cfae0d861003497755969c92faa223108620dc8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -120,14 +136,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_web_vibrate:
-    dependency: "direct main"
-    description:
-      name: flutter_web_vibrate
-      sha256: a7337e2c6314223c61aca769ac5e905507b4a639ba49b0131a15983ce107c2df
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.1"
   get:
     dependency: "direct main"
     description:
@@ -136,14 +144,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.6.6"
-  js:
+  http_parser:
     dependency: transitive
     description:
-      name: js
-      sha256: c1b2e9b5ea78c45e1a0788d29606ba27dc5f71f019f32ca5140f61ef071838cf
+      name: http_parser
+      sha256: "2aa08ce0341cc9b354a498388e30986515406668dbcc4f7c950c3e715496693b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.1"
+    version: "4.0.2"
   just_audio:
     dependency: "direct main"
     description:
@@ -304,14 +312,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
-  seongnam:
+  sizer:
     dependency: "direct main"
     description:
-      name: seongnam
-      sha256: "513633244ea489a59708179173fd6ec15964686852cd7bb662a58327f1b8ca73"
+      name: sizer
+      sha256: "6f68f574b6dd052e87c4abf67fe4feb316651fab02430ef7e53e991c15acfcb7"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "3.0.5"
   sky_engine:
     dependency: transitive
     description: flutter

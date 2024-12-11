@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter_web_vibrate/flutter_web_vibrate.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class Homescreen extends StatefulWidget {
@@ -11,15 +10,6 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
-  void _vibratePattern() {
-    try {
-      // Vibrate in a rhythm
-      FlutterWebVibrate.vibrate(200); // Vibrate for 200 milliseconds
-    } catch (e) {
-      debugPrint('Vibration not supported or error occurred: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,7 +117,6 @@ class _HomescreenState extends State<Homescreen> {
                           title: 'Get Started',
                           color: Colors.tealAccent,
                           onTap: () {
-                            _vibratePattern(); // Trigger vibration
                             Get.toNamed(Routes.playnow);
                           },
                         ),

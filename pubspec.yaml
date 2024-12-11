@@ -39,8 +39,10 @@ dependencies:
   confetti: ^0.8.0
   # audioplayers: ^6.1.0
   just_audio: ^0.9.42
-  seongnam: ^0.0.2
-  flutter_web_vibrate: ^0.0.1
+  dio: ^5.7.0
+  sizer: ^3.0.5
+  # seongnam: ^0.0.2
+  # flutter_web_vibrate: ^0.0.1
 
 dev_dependencies:
   flutter_test:

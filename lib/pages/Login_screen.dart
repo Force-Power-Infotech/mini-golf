@@ -1,7 +1,14 @@
+import 'dart:convert';
+import 'dart:developer';
+
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart'; // Use just_audio
+import 'package:minigolf/api.dart';
+import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/routes/routes.dart';
+import 'package:minigolf/widgets/app_widgets.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _otpController = TextEditingController();
+  String userId = '';
   final AudioPlayer _audioPlayer =
       AudioPlayer(); // Initialize just_audio player
   bool _isOtpSent = false;
@@ -32,11 +40,28 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _sendOtp() {
+  void _sendOtp() async {
     _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
-    setState(() {
-      _isOtpSent = true;
-    });
+    var data = dio.FormData.fromMap({'q': 'login', 'mobileNo': '9330262571'});
+
+    var dioInstance = dio.Dio();
+    var response = await dioInstance.request(
+      'https://script.google.com/macros/s/AKfycbwy-p8bwLNYWLzfs7UYDP24MTtQN9LWgPg3Gxiv_q3iIGFWfMoO0tja3M2BfoCDS7ASww/exec',
+      options: dio.Options(
+        method: 'POST',
+        followRedirects: true,
+        validateStatus: (status) {
+          return status! < 500;
+        },
+      ),
+      data: data,
+    );
+
+    if (response.statusCode == 200) {
+      log(json.encode(response.data));
+    } else {
+      log(response.statusMessage ?? 'Unknown error');
+    }
   }
 
   void _submitOtp() {
