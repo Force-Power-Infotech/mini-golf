@@ -15,7 +15,7 @@ class ApiService {
     },
   );
 
-  final Dio _dio = Dio(options);
+  final Dio _dio = Dio();
 
   ApiService() {
     // Configure Dio with interceptors
@@ -58,8 +58,8 @@ class ApiService {
   }) async {
     AppWidgets.showLoader();
     try {
-      final response =
-          await _dio.get(endpoint, queryParameters: queryParameters);
+      final response = await _dio.request(endpoint,
+          queryParameters: queryParameters, options: Options(method: 'GET'));
       loader.Get.back(closeOverlays: true, canPop: false);
       return response;
     } catch (e) {
@@ -78,7 +78,8 @@ class ApiService {
     try {
       // Convert data to FormData
       final formData = FormData.fromMap(data ?? {});
-      Response response = await _dio.post(endpoint, data: formData);
+      Response response = await _dio.request(endpoint,
+          data: formData, options: Options(method: 'POST'));
       if (response.statusCode == 302) {
         String? redirectUrl = response.headers['location']?.first;
 
