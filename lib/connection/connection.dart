@@ -1,94 +1,89 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:get/get.dart' as loader;
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart' as loader;
 
 import 'package:minigolf/widgets/app_widgets.dart';
 
 class ApiService {
-  static BaseOptions options = BaseOptions(
+  static final BaseOptions options = BaseOptions(
+    baseUrl: 'https://your-base-url.com', // Set your base URL here
     receiveTimeout: const Duration(seconds: 90),
     connectTimeout: const Duration(seconds: 90),
     followRedirects: true,
   );
+
   final Dio _dio = Dio(options);
 
   ApiService() {
-    // _dio.interceptors.add(LogInterceptor());
-    debugPrint(
-        'DioClient initialized with connectTimeout: ${options.connectTimeout} and receiveTimeout: ${options.receiveTimeout}');
+    // Configure Dio with interceptors
     _dio.interceptors.add(InterceptorsWrapper(
-      // Print Request
+      // Log Request Details
       onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
         debugPrint('*** Request ***');
-        debugPrint('uri: ${options.uri}');
-        debugPrint('method: ${options.method}');
-        debugPrint('responseType: ${options.responseType.toString()}');
-        debugPrint('followRedirects: ${options.followRedirects}');
-        debugPrint('persistentConnection: ${options.persistentConnection}');
-        debugPrint('connectTimeout: ${options.connectTimeout}');
-        debugPrint('sendTimeout: ${options.sendTimeout}');
-        debugPrint('receiveTimeout: ${options.receiveTimeout}');
-        debugPrint(
-            'receiveDataWhenStatusError: ${options.receiveDataWhenStatusError}');
-        debugPrint('headers: ${options.headers}');
-        debugPrint('queryParameters: ${options.queryParameters}');
-        debugPrint('data: ${options.data}');
+        debugPrint('URI: ${options.uri}');
+        debugPrint('Method: ${options.method}');
+        debugPrint('Headers: ${options.headers}');
+        debugPrint('Query Parameters: ${options.queryParameters}');
+        debugPrint('Data: ${options.data}');
         debugPrint('*** End Request ***');
         return handler.next(options);
       },
-      // Print Response
+      // Log Response Details
       onResponse: (Response response, ResponseInterceptorHandler handler) {
         debugPrint('*** Response ***');
-        debugPrint('statusCode: ${response.statusCode}');
-        debugPrint('statusMessage: ${response.statusMessage}');
-        debugPrint('headers: ${response.headers}');
-        debugPrint('request: ${response.requestOptions}');
-        debugPrint('data: ${response.data}');
+        debugPrint('Status Code: ${response.statusCode}');
+        debugPrint('Data: ${response.data}');
         debugPrint('*** End Response ***');
         return handler.next(response);
       },
-      // Print Error
-      onError: (DioException error, ErrorInterceptorHandler handler) {
+      // Log Error Details
+      onError: (DioError error, ErrorInterceptorHandler handler) {
         debugPrint('*** Error ***');
-        debugPrint('uri: ${error.requestOptions.uri}');
-        debugPrint('$error');
+        debugPrint('URI: ${error.requestOptions.uri}');
+        debugPrint('Message: ${error.message}');
+        debugPrint('StackTrace: ${error.error}');
         debugPrint('*** End Error ***');
         return handler.next(error);
       },
     ));
   }
 
-  Future<Response?> get(String url,
-      {Map<String, dynamic>? queryParameters}) async {
+  /// GET Request
+  Future<Response?> get(
+    String endpoint, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
     AppWidgets.showLoader();
     try {
-      final response = await _dio.get(url, queryParameters: queryParameters);
+      final response =
+          await _dio.get(endpoint, queryParameters: queryParameters);
       loader.Get.back(closeOverlays: true, canPop: false);
       return response;
     } catch (e) {
       loader.Get.back(closeOverlays: true, canPop: false);
-      log('Exception: $e');
+      log('GET Exception: $e');
       rethrow;
     }
   }
 
-  Future<Response?> post(String url, {Map<String, dynamic>? data}) async {
-    await AppWidgets.showLoader();
-
+  /// POST Request
+  Future<Response?> post(
+    String endpoint, {
+    Map<String, dynamic>? data,
+  }) async {
+    AppWidgets.showLoader();
     try {
-      data?.addAll({});
-      Object formData = FormData.fromMap(data ?? {});
-
-      final response = await _dio.post(url, data: formData);
-      log('Response: ${response.data}');
+      // Convert data to FormData
+      final formData = FormData.fromMap(data ?? {});
+      final response = await _dio.post(endpoint, data: formData);
+      log('POST Response: ${response.data}');
       loader.Get.back(closeOverlays: true, canPop: false);
       return response;
     } catch (e) {
       loader.Get.back(closeOverlays: true, canPop: false);
-      log('Exception: $e');
+      log('POST Exception: $e');
       rethrow;
     }
   }

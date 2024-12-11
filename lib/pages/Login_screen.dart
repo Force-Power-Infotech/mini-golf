@@ -46,13 +46,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     var dioInstance = dio.Dio();
     var response = await dioInstance.request(
-      'https://script.google.com/macros/s/AKfycbwy-p8bwLNYWLzfs7UYDP24MTtQN9LWgPg3Gxiv_q3iIGFWfMoO0tja3M2BfoCDS7ASww/exec',
+      Api.baseUrl,
       options: dio.Options(
         method: 'POST',
-        followRedirects: true,
-        validateStatus: (status) {
-          return status! < 500;
-        },
       ),
       data: data,
     );
@@ -63,7 +59,24 @@ class _LoginScreenState extends State<LoginScreen> {
       log(response.statusMessage ?? 'Unknown error');
     }
   }
+  // void _sendOtp() async {
+  //   _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
+  //   final response = await ApiService().post(
+  //     Api.baseUrl,
+  //     data: {
+  //       'q': 'login',
+  //       'mobileNo': _phoneController.text,
+  //     },
+  //   );
 
+  //   if (response?.statusCode == 200) {
+  //     setState(() {
+  //       _isOtpSent = true;
+  //     });
+  //   } else {
+  //     log(response?.statusMessage ?? 'Unknown error');
+  //   }
+  // }
   void _submitOtp() {
     _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
     // Handle OTP submission logic here

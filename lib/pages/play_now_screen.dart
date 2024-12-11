@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:minigolf/routes/routes.dart';
 
 class PlayNowScreen extends StatefulWidget {
@@ -107,61 +108,64 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
           ),
 
           // Add Player Button
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.black, Colors.grey],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SliverFillRemaining(
+              hasScrollBody: false,
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.black, Colors.grey],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _addPlayer,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _addPlayer,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text(
-                        'Add Player',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => Get.toNamed(Routes.scoreboard),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
+                        child: const Text(
+                          'Add Player',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black),
                         ),
                       ),
-                      child: const Text(
-                        'Submit',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
+                      ElevatedButton(
+                        onPressed: () => Get.toNamed(Routes.scoreboard),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                        ),
+                        child: const Text(
+                          'Submit',
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -183,7 +187,23 @@ class AnimatedPlayerCard extends StatelessWidget {
   final Player player;
   final VoidCallback onRemove;
 
-  const AnimatedPlayerCard({super.key, required this.player, required this.onRemove});
+  const AnimatedPlayerCard({
+    super.key,
+    required this.player,
+    required this.onRemove,
+  });
+
+  Future<void> _playSound(String soundPath) async {
+    final audioPlayer = AudioPlayer(); // Create an AudioPlayer instance
+    try {
+      await audioPlayer.setAsset(soundPath); // Load the sound asset
+      await audioPlayer.play(); // Play the sound
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    } finally {
+      audioPlayer.dispose(); // Dispose of the player after use
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +270,11 @@ class AnimatedPlayerCard extends StatelessWidget {
               // Remove Button
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.redAccent),
-                onPressed: onRemove,
+                onPressed: () async {
+                  await _playSound(
+                      'assets/sounds/mixkit-air-in-a-hit-2161.mp3'); // Play delete sound
+                  onRemove(); // Remove player
+                },
               ),
             ],
           ),
