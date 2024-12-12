@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:confetti/confetti.dart'; // Add the confetti package
+import 'package:confetti/confetti.dart';
+import 'package:minigolf/class/create_team.dart';
+import 'package:minigolf/storage/get_storage.dart';
 
 class ScoringScreen extends StatefulWidget {
   const ScoringScreen({super.key});
@@ -9,18 +11,27 @@ class ScoringScreen extends StatefulWidget {
 }
 
 class _ScoringScreenState extends State<ScoringScreen> {
-  List<Player> players = [
-    Player(name: 'Player 1', score: 0),
-    Player(name: 'Player 2', score: 0),
-    Player(name: 'Player 3', score: 0),
-  ];
   late ConfettiController _confettiController;
+  late TeamClass team;
+  late List<Player> players;
 
   @override
   void initState() {
     super.initState();
+
+    // Initialize confetti controller
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
+
+    // Load team data from storage
+    team = Storage().getteamData();
+
+    // Initialize players from team members
+    players = team.members != null
+        ? team.members!
+            .map((member) => Player(name: member.userName ?? '', score: 0))
+            .toList()
+        : [];
   }
 
   @override
@@ -44,6 +55,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
   }
 
   void _endGame() {
+    if (players.isEmpty) return;
+
     // Determine the winner
     Player winner = players.reduce((a, b) => a.score > b.score ? a : b);
 
@@ -63,7 +76,12 @@ class _ScoringScreenState extends State<ScoringScreen> {
                 blastDirectionality: BlastDirectionality.explosive,
                 emissionFrequency: 0.05,
                 numberOfParticles: 30,
-                colors: const [Colors.red, Colors.green, Colors.blue, Colors.yellow],
+                colors: const [
+                  Colors.red,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.yellow,
+                ],
               ),
             ),
             AlertDialog(
@@ -269,5 +287,5 @@ class Player {
   String name;
   int score;
 
-  Player({required this.name, required this.score});
+  Player({required this.name, this.score = 0});
 }
