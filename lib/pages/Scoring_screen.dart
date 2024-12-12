@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
+import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/storage/get_storage.dart';
+import 'package:minigolf/widgets/app_widgets.dart';
 
 class ScoringScreen extends StatefulWidget {
   const ScoringScreen({super.key});
@@ -29,7 +33,10 @@ class _ScoringScreenState extends State<ScoringScreen> {
     // Initialize players from team members
     players = team.members != null
         ? team.members!
-            .map((member) => Player(name: member.userName ?? '', score: 0))
+            .map((member) => Player(
+                name: member.userName ?? '',
+                uID: member.userID ?? 0,
+                teamID: team.teamId ?? 0))
             .toList()
         : [];
   }
@@ -40,18 +47,72 @@ class _ScoringScreenState extends State<ScoringScreen> {
     super.dispose();
   }
 
-  void _incrementScore(int index) {
+  Future<void> _incrementScore(int index) async {
     setState(() {
       players[index].score++;
     });
+
+    try {
+      final response = await ApiService().post(
+        Api.baseUrl,
+        data: {
+          'q': 'scoring',
+          'uid': players[index].uID,
+          'teamId': players[index].teamID,
+          'score': players[index].score,
+        },
+      );
+
+      if (response == null || response.data == null) {
+        AppWidgets.errorSnackBar(content: 'No response from the server');
+        return;
+      }
+
+      Map<String, dynamic> data = response.data;
+
+      if (response.statusCode == 200 && data['error'] == false) {
+        AppWidgets.successSnackBar(content: data['message']);
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    } catch (e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    }
   }
 
-  void _decrementScore(int index) {
-    setState(() {
-      if (players[index].score > 0) {
+  Future<void> _decrementScore(int index) async {
+    if (players[index].score > 0) {
+      setState(() {
         players[index].score--;
+      });
+
+      try {
+        final response = await ApiService().post(
+          Api.baseUrl,
+          data: {
+            'q': 'scoring',
+            'uid': players[index].uID,
+            'teamId': players[index].teamID,
+            'score': players[index].score,
+          },
+        );
+
+        if (response == null || response.data == null) {
+          AppWidgets.errorSnackBar(content: 'No response from the server');
+          return;
+        }
+
+        Map<String, dynamic> data = response.data;
+
+        if (response.statusCode == 200 && data['error'] == false) {
+          AppWidgets.successSnackBar(content: data['message']);
+        } else {
+          AppWidgets.errorSnackBar(content: data['message']);
+        }
+      } catch (e) {
+        AppWidgets.errorSnackBar(content: 'Error: $e');
       }
-    });
+    }
   }
 
   void _endGame() {
@@ -286,6 +347,12 @@ class _ScoringScreenState extends State<ScoringScreen> {
 class Player {
   String name;
   int score;
+  int uID;
+  int teamID;
 
-  Player({required this.name, this.score = 0});
+  Player(
+      {required this.name,
+      this.score = 4,
+      required this.uID,
+      required this.teamID});
 }

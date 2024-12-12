@@ -41,7 +41,8 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
       data: {
         'q': 'createTeam',
         'createdBy': user.userID,
-        'members': players.map((player) => '"${player.name}"').toList(),
+        'members':
+            players.map((player) => '"${player.name}"').toList().toString(),
       },
     ).then((response) async {
       if (response == null) {
@@ -73,6 +74,23 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ),
       backgroundColor: Colors.black,
       body: Column(
         children: [

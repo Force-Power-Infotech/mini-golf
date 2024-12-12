@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:minigolf/class/user_class.dart';
 import 'package:minigolf/routes/routes.dart';
+import 'package:minigolf/storage/get_storage.dart';
 
 class GetStartedScreen extends StatelessWidget {
   const GetStartedScreen({super.key});
@@ -127,8 +129,15 @@ class GetStartedScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: CupertinoButton(
+                    // onPressed: () {
+                    //   Get.offAllNamed(Routes.login);
+                    // },
                     onPressed: () {
-                      Get.offAllNamed(Routes.login);
+                      if (Storage().hasUserData() == true) {
+                        Get.offAllNamed(Routes.home);
+                      } else {
+                        Get.offAllNamed(Routes.login);
+                      }
                     },
                     color: Colors.tealAccent,
                     borderRadius: BorderRadius.circular(30),
@@ -145,10 +154,10 @@ class GetStartedScreen extends StatelessWidget {
                           ),
                         ),
                         SizedBox(width: 8),
-                        Icon(
-                          CupertinoIcons.arrow_right,
-                          color: Colors.black,
-                        ),
+                        // Icon(
+                        //   CupertinoIcons.arrow_right,
+                        //   color: Colors.black,
+                        // ),
                       ],
                     ),
                   ),

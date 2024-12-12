@@ -48,6 +48,10 @@ class Storage extends GetxController {
     return user;
   }
 
+  bool hasUserData() {
+    return containsKey('user');
+  }
+
   TeamClass getteamData() {
     final team = TeamClass.fromJson(getValue('team'));
     log('team data: ${team.toJson()}');
