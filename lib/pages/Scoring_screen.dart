@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
 import 'package:minigolf/connection/connection.dart';
+import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/storage/get_storage.dart';
 import 'package:minigolf/widgets/app_widgets.dart';
 
@@ -248,6 +250,12 @@ class _ScoringScreenState extends State<ScoringScreen> {
             fontSize: 20,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.flag, color: Colors.greenAccent),
+            onPressed: () => Get.offNamed(Routes.groupwiseleaderboard),
+          ),
+        ],
         centerTitle: true,
       ),
       backgroundColor: const Color(0xFF1A1A1A),

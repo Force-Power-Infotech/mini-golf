@@ -5,4 +5,5 @@ class Routes {
   static const String playnow = '/playnow';
   static const String leaderboard = '/leaderboard';
   static const String scoreboard = '/scoreboard';
+  static const String groupwiseleaderboard = '/groupwiseleaderboard';
 }

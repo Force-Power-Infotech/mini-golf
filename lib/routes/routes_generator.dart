@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minigolf/pages/get_started_screen.dart';
+import 'package:minigolf/pages/group_wise_leaderboard.dart';
 import 'package:minigolf/pages/home_screen.dart';
 import 'package:minigolf/pages/leader_board_screen.dart';
 import 'package:minigolf/pages/login_screen.dart';
@@ -29,6 +30,9 @@ class RouteGenerator {
         break;
       case Routes.scoreboard:
         widgetScreen = const ScoringScreen();
+        break;
+      case Routes.groupwiseleaderboard:
+        widgetScreen = const GroupWiseLeaderboard();
         break;
       default:
         widgetScreen = _errorRoute();

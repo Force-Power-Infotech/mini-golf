@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 
 class LeaderBoardScreen extends StatelessWidget {
   final List<Map<String, dynamic>> players = [
-    {'name': 'Player 1', 'score': 70, 'birdies': 5, 'pars': 8},
-    {'name': 'Player 2', 'score': 72, 'birdies': 3, 'pars': 10},
-    {'name': 'Player 3', 'score': 68, 'birdies': 6, 'pars': 9},
-    {'name': 'Player 4', 'score': 74, 'birdies': 2, 'pars': 12},
-    {'name': 'Player 5', 'score': 69, 'bixrdies': 4, 'pars': 11},
-    {'name': 'Player 5', 'score': 69, 'bixrdies': 4, 'pars': 11},
-    {'name': 'Player 5', 'score': 69, 'bixrdies': 4, 'pars': 11},
-    {'name': 'Player 5', 'score': 69, 'bixrdies': 4, 'pars': 11},
-    {'name': 'Player 5', 'score': 69, 'bixrdies': 4, 'pars': 11},
+    {'name': 'Player 2', 'score': 72},
+    {'name': 'Player 3', 'score': 68},
+    {'name': 'Player 4', 'score': 74},
+    {'name': 'Player 5', 'score': 69},
+    {'name': 'Player 6', 'score': 69},
+    {'name': 'Player 7', 'score': 69},
+    {'name': 'Player 8', 'score': 69},
+    {'name': 'Player 9', 'score': 69},
   ];
 
-   LeaderBoardScreen({super.key});
+  LeaderBoardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -97,16 +96,6 @@ class LeaderBoardScreen extends StatelessWidget {
               style:
                   TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),
-            Text(
-              'Birdies',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              'Pars',
-              style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
           ],
         ),
       ),
@@ -147,18 +136,6 @@ class LeaderBoardScreen extends StatelessWidget {
             style: TextStyle(
               color: highlight ? Colors.amber : Colors.white,
               fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '${player['birdies']}',
-            style: const TextStyle(
-              color: Colors.white,
-            ),
-          ),
-          Text(
-            '${player['pars']}',
-            style: const TextStyle(
-              color: Colors.white,
             ),
           ),
         ],
