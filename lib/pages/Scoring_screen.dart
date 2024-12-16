@@ -18,6 +18,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
   late ConfettiController _confettiController;
   late TeamClass team;
   late List<Player> players;
+  int currentHole = 0;
 
   @override
   void initState() {
@@ -49,7 +50,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
 
   Future<void> _incrementScore(int index) async {
     setState(() {
-      players[index].score++;
+      players[index].holes[currentHole]++;
     });
 
     try {
@@ -59,7 +60,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
           'q': 'scoring',
           'uid': players[index].uID,
           'teamId': players[index].teamID,
-          'score': players[index].score,
+          'score': players[index].holes[currentHole],
         },
       );
 
@@ -81,9 +82,9 @@ class _ScoringScreenState extends State<ScoringScreen> {
   }
 
   Future<void> _decrementScore(int index) async {
-    if (players[index].score > 0) {
+    if (players[index].holes[currentHole] > 0) {
       setState(() {
-        players[index].score--;
+        players[index].holes[currentHole]--;
       });
 
       try {
@@ -93,7 +94,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
             'q': 'scoring',
             'uid': players[index].uID,
             'teamId': players[index].teamID,
-            'score': players[index].score,
+            'score': players[index].holes[currentHole],
           },
         );
 
@@ -119,7 +120,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
     if (players.isEmpty) return;
 
     // Determine the winner
-    Player winner = players.reduce((a, b) => a.score > b.score ? a : b);
+    Player winner =
+        players.reduce((a, b) => a.getTotalScore() > b.getTotalScore() ? a : b);
 
     // Start the confetti animation
     _confettiController.play();
@@ -193,7 +195,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                                 ),
                               ),
                               Text(
-                                player.score.toString(),
+                                player.getTotalScore().toString(),
                                 style: TextStyle(
                                   color: player == winner
                                       ? Colors.greenAccent
@@ -232,127 +234,290 @@ class _ScoringScreenState extends State<ScoringScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black87,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
           'Scoring',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(30),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
           ),
         ),
+        centerTitle: true,
       ),
-      backgroundColor: Colors.grey[900],
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: players.length,
-          itemBuilder: (context, index) {
-            return Card(
-              color: Colors.grey[800],
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor:
-                          Colors.primaries[index % Colors.primaries.length],
-                      child: Text(
-                        players[index].name[0],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          players[index].name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+      backgroundColor: const Color(0xFF1A1A1A),
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.black87,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(3, (index) {
+                return GestureDetector(
+                  onTap: () => setState(() => currentHole = index),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: currentHole == index
+                              ? Colors.greenAccent
+                              : Colors.grey[800],
+                          border: Border.all(
+                            color: Colors.white24,
+                            width: 2,
                           ),
+                          boxShadow: currentHole == index
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.greenAccent.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
+                                  )
+                                ]
+                              : [],
                         ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.remove_circle,
-                            color: Colors.redAccent,
-                            size: 28,
-                          ),
-                          onPressed: () => _decrementScore(index),
-                        ),
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: 50,
-                          height: 40,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[700],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                        child: Center(
                           child: Text(
-                            players[index].score.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
+                            'H${index + 1}',
+                            style: TextStyle(
+                              color: currentHole == index
+                                  ? Colors.black
+                                  : Colors.white70,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.add_circle,
-                            color: Colors.greenAccent,
-                            size: 28,
-                          ),
-                          onPressed: () => _incrementScore(index),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Hole ${index + 1}',
+                        style: TextStyle(
+                          color: currentHole == index
+                              ? Colors.greenAccent
+                              : Colors.white70,
+                          fontSize: 12,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: players.length,
+              itemBuilder: (context, index) {
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.grey[900]!, Colors.grey[850]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 25,
+                              backgroundColor: Colors
+                                  .primaries[index % Colors.primaries.length],
+                              child: Text(
+                                players[index].name[0],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    players[index].name,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Total: ${players[index].getTotalScore()}',
+                                    style: const TextStyle(
+                                      color: Colors.greenAccent,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black12,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildScoreButton(
+                              icon: Icons.remove_circle,
+                              color: Colors.redAccent,
+                              onPressed: () => _updateScore(index, -1),
+                            ),
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[800],
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.greenAccent,
+                                  width: 2,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${players[index].holes[currentHole]}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            _buildScoreButton(
+                              icon: Icons.add_circle,
+                              color: Colors.greenAccent,
+                              onPressed: () => _updateScore(index, 1),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _endGame,
         label: const Text('End Game'),
         icon: const Icon(Icons.flag),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.greenAccent,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+  }
+
+  Widget _buildScoreButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          child: Icon(
+            icon,
+            color: color,
+            size: 36,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _updateScore(int playerIndex, int change) {
+    setState(() {
+      int newScore = players[playerIndex].holes[currentHole] + change;
+      if (newScore >= 0) {
+        players[playerIndex].holes[currentHole] = newScore;
+      }
+    });
+    _updateServerScore(playerIndex);
+  }
+
+  Future<void> _updateServerScore(int playerIndex) async {
+    try {
+      final response = await ApiService().post(
+        Api.baseUrl,
+        data: {
+          'q': 'scoring',
+          'uid': players[playerIndex].uID,
+          'teamId': players[playerIndex].teamID,
+          'score': players[playerIndex].holes[currentHole],
+        },
+      );
+
+      if (response == null || response.data == null) {
+        AppWidgets.errorSnackBar(content: 'No response from the server');
+        return;
+      }
+
+      Map<String, dynamic> data = response.data;
+
+      if (response.statusCode == 200 && data['error'] == false) {
+        AppWidgets.successSnackBar(content: data['message']);
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    } catch (e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    }
   }
 }
 
 class Player {
   String name;
-  int score;
+  List<int> holes;
   int uID;
   int teamID;
 
-  Player(
-      {required this.name,
-      this.score = 4,
-      required this.uID,
-      required this.teamID});
+  Player({
+    required this.name,
+    required this.uID,
+    required this.teamID,
+  }) : holes = List.filled(3, 0);
+
+  int getTotalScore() => holes.reduce((a, b) => a + b);
 }

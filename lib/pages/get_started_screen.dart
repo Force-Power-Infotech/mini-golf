@@ -15,8 +15,8 @@ class GetStartedScreen extends StatelessWidget {
         children: [
           // Full-Screen Background
           Positioned.fill(
-            child: Image.network(
-              'https://thumbs.dreamstime.com/b/white-golf-balls-against-green-background-pattern-vertical-wallpaper-poster-flyer-events-advertisement-template-concept-sport-321910912.jpg',
+            child: Image.asset(
+              'assets/images/inmall.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -44,11 +44,11 @@ class GetStartedScreen extends StatelessWidget {
               children: [
                 const Spacer(flex: 1),
 
-                // App Icon
-                Align(
-                  alignment: Alignment.center,
+                // Modern App Icon
+                Hero(
+                  tag: 'app_icon',
                   child: Container(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: const EdgeInsets.all(28.0),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.5),
                       shape: BoxShape.circle,
@@ -81,16 +81,36 @@ class GetStartedScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Subtitle
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    'Experience the joy of golf anytime, anywhere!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                // Subtitle with Modern Style
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Background Blur
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+                      // Subtitle Text
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8),
+                        child: const Text(
+                          'Experience the joy of golf anytime, anywhere!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.tealAccent,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 

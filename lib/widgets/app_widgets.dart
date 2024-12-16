@@ -58,15 +58,53 @@ class AppWidgets {
     );
   }
 
-  static successSnackBar(
-      {required String content, Color textColor = Colors.black}) {
+  static successSnackBar({
+    required String content,
+    Color textColor = Colors.black,
+    Duration duration = const Duration(seconds: 3),
+  }) {
     if (Get.isSnackbarOpen) {
       Get.closeAllSnackbars();
     }
-    return Get.snackbar('Success', content,
-        backgroundColor: Colors.green.withOpacity(0.8),
-        borderRadius: 10,
-        colorText: textColor);
+    return Get.snackbar(
+      'Success',
+      content,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.9),
+      borderRadius: 20,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      colorText: textColor,
+      duration: duration,
+      icon: const Icon(
+        CupertinoIcons.check_mark_circled_solid,
+        color: Colors.white,
+        size: 26,
+      ),
+      padding: const EdgeInsets.all(16),
+      titleText: const Text(
+        'Success',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      messageText: Text(
+        content,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      boxShadows: [
+        BoxShadow(
+          color: Colors.greenAccent.withOpacity(0.3),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
   }
 
   static errorSnackBar({
@@ -77,50 +115,66 @@ class AppWidgets {
     if (Get.isSnackbarOpen) {
       Get.closeAllSnackbars();
     }
-    return Get.snackbar('Error', content,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: textColor,
-        borderRadius: 10,
-        duration: duration);
+    return Get.snackbar(
+      'Error',
+      content,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red.withOpacity(0.9),
+      borderRadius: 20,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      colorText: textColor,
+      duration: duration,
+      icon: const Icon(
+        CupertinoIcons.exclamationmark_triangle_fill,
+        color: Colors.white,
+        size: 26,
+      ),
+      padding: const EdgeInsets.all(16),
+      titleText: const Text(
+        'Error',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      messageText: Text(
+        content,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      boxShadows: [
+        BoxShadow(
+          color: Colors.redAccent.withOpacity(0.3),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
   }
 
   static showLoader() {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      // show loader
+      // Show loader with a centered image
       showDialog(
         context: Get.context ?? Get.overlayContext!,
-        barrierDismissible: false,
+        barrierDismissible: false, // Prevent dismiss
         builder: (_) => Center(
           child: Material(
             color: Colors.transparent,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-              margin: const EdgeInsets.all(30),
               decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(10)),
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CupertinoActivityIndicator(
-                        color: Colors.white,
-                        radius: 15,
-                      ),
-                      SizedBox(
-                        height: 15,
-                      ),
-                      Text(
-                        "Please wait...",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  )),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Image.asset(
+                'assets/images/golfballfire.gif', // Replace with your loader image path
+                width: 100, // Adjust the size as needed
+                height: 100,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
         ),

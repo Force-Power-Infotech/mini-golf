@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,6 +25,13 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
 
   UserClass user = Storage().getUserData();
 
+  @override
+  void initState() {
+    super.initState();
+    // Add the current user as the first player
+    players.add(Player(name: user.name ?? '', imageUrl: user.name ?? ''));
+  }
+
   Future<void> _playSound(String soundPath) async {
     try {
       await _audioPlayer.setAsset(soundPath); // Load the sound asset
@@ -34,7 +42,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   }
 
   Future<void> _createTeam() async {
-    log("player array: ${players.map((player) => '"${player.name}"').toList().toString()}");
+    // log("player array: ${players.map((player) => '"${player.name}"').toList().toString()}");
 
     await ApiService().post(
       Api.baseUrl,
@@ -74,125 +82,100 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Container(
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ),
-      ),
-      backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          // Sliver-like Header Section with Rounded Edges
-          Flexible(
-            flex: 4,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+      backgroundColor: const Color(0xFF1A1A1A),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: MediaQuery.of(context).size.height * 0.6,
+            pinned: true,
+            backgroundColor: Colors.transparent,
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
               ),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(
-                            'https://i.ibb.co/Zz95KzQ/PLAY-now.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.transparent, Colors.black],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+                child: Image.asset(
+                  'assets/images/play_now_header.png',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
-
-          // Player List Section
-          Flexible(
-            flex: 6,
-            child: ListView.builder(
-              itemCount: players.length,
-              itemBuilder: (context, index) {
-                return AnimatedPlayerCard(
-                  player: players[index],
-                  onRemove: () {
-                    setState(() {
-                      players.removeAt(index);
-                    });
-                  },
-                );
-              },
-            ),
-          ),
-
-          // Action Buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          SliverToBoxAdapter(
+            child: Column(
               children: [
-                ElevatedButton(
-                  onPressed: _addPlayer,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text(
-                    'Add Player',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+                // Player List Section
+                Container(
+                  margin: const EdgeInsets.only(top: 20),
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: players.length,
+                    itemBuilder: (context, index) {
+                      return AnimatedPlayerCard(
+                        player: players[index],
+                        onRemove: index == 0
+                            ? null
+                            : () {
+                                setState(() {
+                                  players.removeAt(index);
+                                });
+                              },
+                        isCurrentUser: index == 0,
+                      );
+                    },
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: _createTeam,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text(
-                    'Submit',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+
+                // Action Buttons
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.add, color: Colors.black),
+                        label: const Text('Add Player'),
+                        onPressed: _addPlayer,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          elevation: 8,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.play_arrow, color: Colors.white),
+                        label: const Text('Start Game'),
+                        onPressed: _createTeam,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00C853),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          elevation: 8,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -213,31 +196,49 @@ class Player {
 
 class AnimatedPlayerCard extends StatelessWidget {
   final Player player;
-  final VoidCallback onRemove;
+  final VoidCallback? onRemove;
+  final bool isCurrentUser;
 
   const AnimatedPlayerCard({
     super.key,
     required this.player,
-    required this.onRemove,
+    this.onRemove,
+    this.isCurrentUser = false,
   });
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return '?';
+    final initials = name
+        .trim()
+        .split(' ')
+        .map((word) => word.isNotEmpty ? word[0].toUpperCase() : '')
+        .join('');
+    return initials.isEmpty
+        ? '?'
+        : initials.substring(0, min(2, initials.length));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(16),
+          color:
+              isCurrentUser ? const Color(0xFF2E2E2E) : const Color(0xFF252525),
+          borderRadius: BorderRadius.circular(24),
           border: player.name.isEmpty
               ? Border.all(color: Colors.redAccent, width: 2)
-              : null,
+              : Border.all(
+                  color: isCurrentUser
+                      ? Colors.orange.withOpacity(0.5)
+                      : Colors.transparent),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 15,
               offset: const Offset(0, 5),
             ),
           ],
@@ -246,43 +247,61 @@ class AnimatedPlayerCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.grey[800],
-                backgroundImage: player.imageUrl.isNotEmpty
-                    ? NetworkImage(player.imageUrl)
-                    : null,
-                child: player.imageUrl.isEmpty
-                    ? const Icon(
-                        Icons.person,
-                        size: 30,
-                        color: Colors.white,
-                      )
-                    : null,
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: CircleAvatar(
+                  radius: 30,
+                  backgroundColor:
+                      isCurrentUser ? Colors.orange : const Color(0xFF3A3A3A),
+                  child: Text(
+                    _getInitials(player.name),
+                    style: TextStyle(
+                      color: isCurrentUser ? Colors.black : Colors.white70,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: TextField(
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: 'Name',
-                    labelStyle: TextStyle(color: Colors.grey),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                  controller: TextEditingController(text: player.name),
+                  enabled: !isCurrentUser,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight:
+                        isCurrentUser ? FontWeight.bold : FontWeight.normal,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: isCurrentUser ? 'Current Player' : 'Player Name',
+                    labelStyle: TextStyle(
+                      color: Colors.grey[400],
+                      fontSize: 14,
                     ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blueAccent),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey[700]!),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.orange),
                     ),
                   ),
-                  onChanged: (value) {
-                    player.name = value;
-                  },
+                  onChanged: (value) => player.name = value,
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.redAccent),
-                onPressed: onRemove,
-              ),
+              if (onRemove != null)
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: onRemove,
+                ),
             ],
           ),
         ),

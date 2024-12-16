@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               // Welcome Text
               const Text(
-                'Welcome Back!',
+                'Welcome Back !',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32,
@@ -162,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Phone Number',
                     labelStyle: TextStyle(color: Colors.grey[400]),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
                     ),
                     prefixIcon:
@@ -180,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'OTP',
                     labelStyle: TextStyle(color: Colors.grey[400]),
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
                     ),
                     prefixIcon:
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                   ),
                   child: Text(
