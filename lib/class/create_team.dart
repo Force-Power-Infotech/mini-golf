@@ -22,22 +22,22 @@ class TeamClass {
     if (json['members'] != null) {
       members = <Members>[];
       json['members'].forEach((v) {
-        members!.add(new Members.fromJson(v));
+        members!.add(Members.fromJson(v));
       });
     }
     createDateTime = json['createDateTime'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['error'] = this.error;
-    data['message'] = this.message;
-    data['teamId'] = this.teamId;
-    data['createdBy'] = this.createdBy;
-    if (this.members != null) {
-      data['members'] = this.members!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['error'] = error;
+    data['message'] = message;
+    data['teamId'] = teamId;
+    data['createdBy'] = createdBy;
+    if (members != null) {
+      data['members'] = members!.map((v) => v.toJson()).toList();
     }
-    data['createDateTime'] = this.createDateTime;
+    data['createDateTime'] = createDateTime;
     return data;
   }
 }
@@ -54,9 +54,9 @@ class Members {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['userID'] = this.userID;
-    data['userName'] = this.userName;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['userID'] = userID;
+    data['userName'] = userName;
     return data;
   }
 }

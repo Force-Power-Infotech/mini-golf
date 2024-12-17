@@ -35,7 +35,7 @@ class LeaderboardModel {
 }
 
 class GroupWiseLeaderboard extends StatefulWidget {
-  const GroupWiseLeaderboard({Key? key}) : super(key: key);
+  const GroupWiseLeaderboard({super.key});
 
   @override
   State<GroupWiseLeaderboard> createState() => _GroupWiseLeaderboardState();
