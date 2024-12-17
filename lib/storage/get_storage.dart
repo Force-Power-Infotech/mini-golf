@@ -54,17 +54,8 @@ class Storage extends GetxController {
     return team;
   }
 
-  bool hasUserData() {
-    return containsKey('user');
-  }
-
-  TeamClass getteamData() {
-    final team = TeamClass.fromJson(getValue('team'));
-    log('team data: ${team.toJson()}');
-    return team;
-  }
-
   bool isLoggedIn() {
-    return containsKey('user');
+    final user = getValue('user');
+    return user != null && user['userID'] != null;
   }
 }

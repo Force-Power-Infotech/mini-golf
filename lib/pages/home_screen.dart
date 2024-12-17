@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -171,7 +172,14 @@ class _HomescreenState extends State<Homescreen>
                           icon: Icons.sports_golf,
                           title: 'Get Started',
                           color: Colors.tealAccent,
-                          onTap: () => Get.toNamed(Routes.playnow),
+                          onTap: () {
+                            log("Is Logged In: ${Storage().isLoggedIn()}");
+                            if (Storage().isLoggedIn() == true) {
+                              Get.toNamed(Routes.playnow);
+                            } else {
+                              Get.toNamed(Routes.login);
+                            }
+                          },
                         ),
                         _buildFeatureCard(
                           icon: Icons.star,

@@ -65,9 +65,16 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => Get.back(),
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Get.back(),
+              ),
             ),
             expandedHeight: 400,
             backgroundColor: Colors.transparent,
@@ -80,8 +87,7 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
                 child: Container(
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(
-                          'https://i.ibb.co/HFns4Cq/leaderboard.png'),
+                      image: AssetImage('assets/images/leaderboard_banner.png'),
                       fit: BoxFit.cover,
                     ),
                   ),

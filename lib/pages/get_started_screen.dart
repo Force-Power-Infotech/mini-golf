@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -153,7 +155,8 @@ class GetStartedScreen extends StatelessWidget {
                     //   Get.offAllNamed(Routes.login);
                     // },
                     onPressed: () {
-                      if (Storage().hasUserData() == true) {
+                      log("Is Logged In: ${Storage().isLoggedIn()}");
+                      if (Storage().isLoggedIn() == true) {
                         Get.offAllNamed(Routes.home);
                       } else {
                         Get.offAllNamed(Routes.login);

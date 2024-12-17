@@ -1,23 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:minigolf/api.dart';
+import 'package:minigolf/connection/connection.dart';
+import 'package:minigolf/widgets/app_widgets.dart';
 
-class LeaderBoardScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> players = [
-    {'name': 'Player 2', 'score': 72},
-    {'name': 'Player 3', 'score': 68},
-    {'name': 'Player 4', 'score': 74},
-    {'name': 'Player 5', 'score': 69},
-    {'name': 'Player 6', 'score': 69},
-    {'name': 'Player 7', 'score': 69},
-    {'name': 'Player 8', 'score': 69},
-    {'name': 'Player 9', 'score': 69},
-  ];
+class LeaderboardModel {
+  final int uid;
+  final int score;
+  final bool status;
+  final DateTime lastUpdated;
+  final String userName;
 
-  LeaderBoardScreen({super.key});
+  LeaderboardModel({
+    required this.uid,
+    required this.score,
+    required this.status,
+    required this.lastUpdated,
+    required this.userName,
+  });
+
+  factory LeaderboardModel.fromJson(Map<String, dynamic> json) {
+    return LeaderboardModel(
+      uid: json['uid'],
+      score: json['score'],
+      status: json['status'],
+      lastUpdated: DateTime.parse(json['lastUpdated']),
+      userName: json['userName'],
+    );
+  }
+}
+
+class LeaderBoardScreen extends StatefulWidget {
+  const LeaderBoardScreen({super.key});
+
+  @override
+  State<LeaderBoardScreen> createState() => _LeaderBoardScreenState();
+}
+
+class _LeaderBoardScreenState extends State<LeaderBoardScreen> {
+  List<LeaderboardModel> scores = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchLeaderboardData();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Sort players by score (lowest score ranks higher)
-    players.sort((a, b) => a['score'].compareTo(b['score']));
+    final sortedScores = [...scores]
+      ..sort((a, b) => a.score.compareTo(b.score));
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -25,6 +58,17 @@ class LeaderBoardScreen extends StatelessWidget {
         slivers: [
           // SliverAppBar for the leaderboard banner
           SliverAppBar(
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Get.back(),
+              ),
+            ),
             expandedHeight: 400,
             backgroundColor: Colors.transparent,
             flexibleSpace: FlexibleSpaceBar(
@@ -36,8 +80,7 @@ class LeaderBoardScreen extends StatelessWidget {
                 child: Container(
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(
-                          'https://i.ibb.co/HFns4Cq/leaderboard.png'),
+                      image: AssetImage('assets/images/leaderboard_banner.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -55,16 +98,32 @@ class LeaderBoardScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 16),
                 _buildLeaderboardHeader(),
-                ...players.asMap().entries.map((entry) {
-                  final rank = entry.key + 1;
-                  final player = entry.value;
-                  return _buildLeaderboardRow(rank, player, rank <= 3);
-                }),
+                if (isLoading)
+                  const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                else if (scores.isEmpty)
+                  const Center(
+                    child: Text(
+                      'No scores available',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  )
+                else
+                  ...sortedScores.asMap().entries.map((entry) {
+                    final rank = entry.key + 1;
+                    final player = entry.value;
+                    return _buildLeaderboardRow(rank, player, rank <= 3);
+                  }),
               ],
             ),
           ),
         ],
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: fetchLeaderboardData,
+      //   child: const Icon(Icons.refresh),
+      // ),
     );
   }
 
@@ -104,7 +163,7 @@ class LeaderBoardScreen extends StatelessWidget {
 
   /// Builds a row for a player's stats in the leaderboard.
   Widget _buildLeaderboardRow(
-      int rank, Map<String, dynamic> player, bool highlight) {
+      int rank, LeaderboardModel player, bool highlight) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
@@ -125,14 +184,14 @@ class LeaderBoardScreen extends StatelessWidget {
             ),
           ),
           Text(
-            player['name'],
+            player.userName,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
-            '${player['score']}',
+            '${player.score}',
             style: TextStyle(
               color: highlight ? Colors.amber : Colors.white,
               fontWeight: FontWeight.bold,
@@ -141,6 +200,46 @@ class LeaderBoardScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> fetchLeaderboardData() async {
+    if (mounted) {
+      setState(() => isLoading = true);
+    }
+
+    try {
+      final response = await ApiService().post(
+        Api.baseUrl,
+        data: {
+          'q': 'dayWiseLeaderboard',
+        },
+      );
+
+      if (!mounted) return;
+
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        setState(() => isLoading = false);
+        return;
+      }
+
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        setState(() {
+          scores = (data['scores'] as List)
+              .map((item) => LeaderboardModel.fromJson(item))
+              .toList();
+          isLoading = false;
+        });
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+      setState(() => isLoading = false);
+    }
   }
 }
 

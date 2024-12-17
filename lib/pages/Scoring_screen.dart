@@ -35,7 +35,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
     totalHoles = Get.arguments?['holes'] ?? 9;
 
     // Load team data
-    team = Storage().getteamData();
+    // team = Storage().getteamData();
 
     // Initialize players with default score of 4
     players = team.members != null
