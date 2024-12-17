@@ -22,7 +22,7 @@ class PlayNowScreen extends StatefulWidget {
 class _PlayNowScreenState extends State<PlayNowScreen> {
   List<Player> players = [];
   final AudioPlayer _audioPlayer = AudioPlayer();
-
+  int selectedHoles = 9; // Default number of holes
   UserClass user = Storage().getUserData();
 
   @override
@@ -42,8 +42,6 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   }
 
   Future<void> _createTeam() async {
-    // log("player array: ${players.map((player) => '"${player.name}"').toList().toString()}");
-
     await ApiService().post(
       Api.baseUrl,
       data: {
@@ -51,6 +49,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
         'createdBy': user.userID,
         'members':
             players.map((player) => '"${player.name}"').toList().toString(),
+        'numberOfHoles': selectedHoles,
       },
     ).then((response) async {
       if (response == null) {
@@ -61,10 +60,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
       if (response.statusCode == 200 && data['error'] == false) {
         Storage().storeTeamDate(TeamClass.fromJson(data));
         AppWidgets.successSnackBar(content: data['message']);
-
-        Get.toNamed(Routes.scoreboard);
-        // Use store data from storage below
-        // Assuming you have a method to store data in local storage
+        Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
       } else {
         AppWidgets.errorSnackBar(content: data['message']);
       }
@@ -77,6 +73,110 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
     setState(() {
       players.add(Player());
     });
+  }
+
+  Widget _buildHoleSelector() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2E2E2E),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Number of Holes',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildCounterButton(
+                icon: Icons.remove,
+                onTap: () {
+                  if (selectedHoles > 1) {
+                    setState(() => selectedHoles--);
+                    _playSound('assets/sounds/click.mp3');
+                  }
+                },
+              ),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                width: 100,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Text(
+                    '$selectedHoles',
+                    key: ValueKey<int>(selectedHoles),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              _buildCounterButton(
+                icon: Icons.add,
+                onTap: () {
+                  if (selectedHoles < 18) {
+                    setState(() => selectedHoles++);
+                    _playSound('assets/sounds/click.mp3');
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCounterButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.orange,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.withOpacity(0.3),
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: Colors.black,
+          size: 24,
+        ),
+      ),
+    );
   }
 
   @override
@@ -97,7 +197,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => Get.back(),
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -138,6 +238,9 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                     },
                   ),
                 ),
+
+                // Add Hole Selector here
+                _buildHoleSelector(),
 
                 // Action Buttons
                 Container(

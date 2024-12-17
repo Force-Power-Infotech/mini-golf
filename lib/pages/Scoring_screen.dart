@@ -21,27 +21,42 @@ class _ScoringScreenState extends State<ScoringScreen> {
   late TeamClass team;
   late List<Player> players;
   int currentHole = 0;
+  late ScrollController _scrollController;
+  late int totalHoles;
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize confetti controller
+    _scrollController = ScrollController();
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
 
-    // Load team data from storage
+    // Get holes count from arguments
+    totalHoles = Get.arguments?['holes'] ?? 9;
+
+    // Load team data
     team = Storage().getteamData();
 
-    // Initialize players from team members
+    // Initialize players with default score of 4
     players = team.members != null
         ? team.members!
             .map((member) => Player(
                 name: member.userName ?? '',
                 uID: member.userID ?? 0,
-                teamID: team.teamId ?? 0))
+                teamID: team.teamId ?? 0,
+                totalHoles: totalHoles,
+                defaultScore: 4))
             .toList()
         : [];
+
+    // Send initial scores to API
+    _sendInitialScores();
+  }
+
+  Future<void> _sendInitialScores() async {
+    for (var player in players) {
+      await _updateServerScore(players.indexOf(player));
+    }
   }
 
   @override
@@ -240,7 +255,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.back(),
         ),
         title: const Text(
           'Scoring',
@@ -261,69 +276,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
       backgroundColor: const Color(0xFF1A1A1A),
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(3, (index) {
-                return GestureDetector(
-                  onTap: () => setState(() => currentHole = index),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: currentHole == index
-                              ? Colors.greenAccent
-                              : Colors.grey[800],
-                          border: Border.all(
-                            color: Colors.white24,
-                            width: 2,
-                          ),
-                          boxShadow: currentHole == index
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.greenAccent.withOpacity(0.3),
-                                    blurRadius: 10,
-                                    spreadRadius: 2,
-                                  )
-                                ]
-                              : [],
-                        ),
-                        child: Center(
-                          child: Text(
-                            'H${index + 1}',
-                            style: TextStyle(
-                              color: currentHole == index
-                                  ? Colors.black
-                                  : Colors.white70,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Hole ${index + 1}',
-                        style: TextStyle(
-                          color: currentHole == index
-                              ? Colors.greenAccent
-                              : Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
-          ),
+          _buildHolesSelector(),
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -493,25 +446,79 @@ class _ScoringScreenState extends State<ScoringScreen> {
           'q': 'scoring',
           'uid': players[playerIndex].uID,
           'teamId': players[playerIndex].teamID,
-          'score': players[playerIndex].holes[currentHole],
+          'score': players[playerIndex].getTotalScore(), // Send total score
         },
       );
 
-      if (response == null || response.data == null) {
-        AppWidgets.errorSnackBar(content: 'No response from the server');
-        return;
-      }
-
-      Map<String, dynamic> data = response.data;
-
-      if (response.statusCode == 200 && data['error'] == false) {
-        AppWidgets.successSnackBar(content: data['message']);
+      if (response?.statusCode == 200 && response?.data['error'] == false) {
+        // Don't show success message for every update
       } else {
-        AppWidgets.errorSnackBar(content: data['message']);
+        AppWidgets.errorSnackBar(
+            content: response?.data['message'] ?? 'Update failed');
       }
     } catch (e) {
       AppWidgets.errorSnackBar(content: 'Error: $e');
     }
+  }
+
+  Widget _buildHolesSelector() {
+    return Container(
+      height: 100,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: SingleChildScrollView(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(totalHoles, (index) {
+            return GestureDetector(
+              onTap: () => setState(() => currentHole = index),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                width: 80,
+                decoration: BoxDecoration(
+                  color: currentHole == index
+                      ? Colors.greenAccent
+                      : Colors.grey[800],
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: currentHole == index
+                      ? [
+                          BoxShadow(
+                            color: Colors.greenAccent.withOpacity(0.3),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          )
+                        ]
+                      : [],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Hole',
+                      style: TextStyle(
+                        color: currentHole == index
+                            ? Colors.black
+                            : Colors.white70,
+                      ),
+                    ),
+                    Text(
+                      '${index + 1}',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: currentHole == index
+                            ? Colors.black
+                            : Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
   }
 }
 
@@ -525,7 +532,9 @@ class Player {
     required this.name,
     required this.uID,
     required this.teamID,
-  }) : holes = List.filled(3, 0);
+    required int totalHoles,
+    int defaultScore = 4,
+  }) : holes = List.filled(totalHoles, defaultScore);
 
   int getTotalScore() => holes.reduce((a, b) => a + b);
 }

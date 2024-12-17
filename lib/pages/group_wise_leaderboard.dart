@@ -65,6 +65,10 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Get.back(),
+            ),
             expandedHeight: 400,
             backgroundColor: Colors.transparent,
             flexibleSpace: FlexibleSpaceBar(
