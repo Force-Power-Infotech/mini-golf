@@ -74,7 +74,7 @@ class _HomescreenState extends State<Homescreen>
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          "Welcome back, ${user?.name}!",
+                          "Welcome back, ${user.name}!",
                           style: TextStyle(
                             color: Colors.grey[400],
                             fontSize: 16,

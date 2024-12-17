@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:minigolf/class/user_class.dart';
 import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/storage/get_storage.dart';
 

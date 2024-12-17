@@ -30,15 +30,15 @@ class UserClass {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['error'] = this.error;
-    data['message'] = this.message;
-    data['userID'] = this.userID;
-    data['mobileNo'] = this.mobileNo;
-    data['otp'] = this.otp;
-    data['name'] = this.name;
-    data['lastLogin'] = this.lastLogin;
-    data['active'] = this.active;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['error'] = error;
+    data['message'] = message;
+    data['userID'] = userID;
+    data['mobileNo'] = mobileNo;
+    data['otp'] = otp;
+    data['name'] = name;
+    data['lastLogin'] = lastLogin;
+    data['active'] = active;
     return data;
   }
 }

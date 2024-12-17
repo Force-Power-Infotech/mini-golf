@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
 import 'package:minigolf/connection/connection.dart';
