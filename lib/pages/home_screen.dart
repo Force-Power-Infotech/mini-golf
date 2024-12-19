@@ -3,9 +3,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:minigolf/api.dart';
 import 'package:minigolf/class/user_class.dart';
+import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/storage/get_storage.dart';
+import 'package:minigolf/widgets/app_widgets.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -26,6 +29,140 @@ class _HomescreenState extends State<Homescreen>
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
+
+    // Add name check
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (user.name == null ||
+          user.name?.isEmpty == true ||
+          user.name?.trim() == "") {
+        _showNameInputDialog();
+      }
+    });
+  }
+
+  void _showNameInputDialog() {
+  final TextEditingController nameController = TextEditingController();
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: const Color(0xFF1A1A1A),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1A1A1A), Color(0xFF2B2B2B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.7),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter Your Name',
+              style: TextStyle(
+                color: Colors.tealAccent,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+              ),
+            ),
+            const SizedBox(height: 15),
+            TextField(
+              controller: nameController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[900],
+                hintText: 'Your name',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      BorderSide(color: Colors.tealAccent.withOpacity(0.5)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.tealAccent),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    if (nameController.text.trim().isNotEmpty) {
+                      nameapi(nameController.text.trim());
+                      user.name = nameController.text.trim();
+                      Storage().storeUserDate(user);
+                      setState(() {});
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.tealAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shadowColor: Colors.tealAccent.withOpacity(0.5),
+                  ),
+                  child: const Text(
+                    'Save',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+
+  void nameapi(String name) async {
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'modifyUsername',
+        'userID': user.userID,
+        'username': name,
+      },
+    ).then((response) {
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        AppWidgets.successSnackBar(content: data['message']);
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    }).catchError((e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
   }
 
   @override

@@ -25,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isOtpSent = false;
   int _timeLeft = 0;
   Timer? _timer;
+  String _displayPhone = '';  // Add this line near other state variables
 
   @override
   void dispose() {
@@ -75,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isOtpSent = true;
           userId = data['userID'].toString();
+          _displayPhone = _phoneController.text;  // Store the phone number
         });
         startTimer(); // Start the timer when OTP is sent
       } else {
@@ -241,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
               if (_isOtpSent)
                 Center(
                   child: Text(
-                    'Enter the OTP sent to your phone',
+                    'Enter the OTP sent to ${_displayPhone}',  // Updated text
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 14,
