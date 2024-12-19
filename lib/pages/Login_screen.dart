@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart'; // Use just_audio
@@ -8,6 +7,7 @@ import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/storage/get_storage.dart';
 import 'package:minigolf/widgets/app_widgets.dart';
+import 'dart:async';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,11 +23,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final AudioPlayer _audioPlayer =
       AudioPlayer(); // Initialize just_audio player
   bool _isOtpSent = false;
+  int _timeLeft = 0;
+  Timer? _timer;
 
   @override
   void dispose() {
+    _timer?.cancel();
     _audioPlayer.dispose(); // Dispose the player when not needed
     super.dispose();
+  }
+
+  void startTimer() {
+    _timeLeft = 30; // 30 seconds cooldown
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (_timeLeft > 0) {
+          _timeLeft--;
+        } else {
+          _timer?.cancel();
+        }
+      });
+    });
   }
 
   Future<void> _playSound(String soundPath) async {
@@ -39,25 +56,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // void _sendOtp() async {
-  //   _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
-  //   var data = dio.FormData.fromMap({'q': 'login', 'mobileNo': '9330262571'});
-
-  //   var dioInstance = dio.Dio();
-  //   var response = await dioInstance.request(
-  //     Api.baseUrl,
-  //     options: dio.Options(
-  //       method: 'POST',
-  //     ),
-  //     data: data,
-  //   );
-
-  //   if (response.statusCode == 200) {
-  //     log(json.encode(response.data));
-  //   } else {
-  //     log(response.statusMessage ?? 'Unknown error');
-  //   }
-  // }
   void _sendOtp() async {
     _playSound('assets/sounds/mixkit-long-pop-2358.mp3'); // Play sound
     await ApiService().post(
@@ -78,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _isOtpSent = true;
           userId = data['userID'].toString();
         });
+        startTimer(); // Start the timer when OTP is sent
       } else {
         AppWidgets.errorSnackBar(content: data['message']);
       }
@@ -168,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Icon(Icons.phone, color: Colors.tealAccent),
                   ),
                 ),
-              if (_isOtpSent)
+              if (_isOtpSent) ...[
                 TextField(
                   controller: _otpController,
                   keyboardType: TextInputType.number,
@@ -186,6 +185,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         const Icon(Icons.lock, color: Colors.tealAccent),
                   ),
                 ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      onPressed: _timeLeft == 0 ? _sendOtp : null,
+                      child: Text(
+                        _timeLeft > 0 
+                            ? 'Resend OTP in ${_timeLeft}s'
+                            : 'Resend OTP',
+                        style: TextStyle(
+                          color: _timeLeft == 0 ? Colors.tealAccent : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
 
               const SizedBox(height: 20),
 

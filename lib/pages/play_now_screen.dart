@@ -209,7 +209,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                   bottomRight: Radius.circular(30),
                 ),
                 child: Image.asset(
-                  'assets/images/play_now_header.png',
+                  'assets/images/addplayer.png',
                   fit: BoxFit.cover,
                 ),
               ),

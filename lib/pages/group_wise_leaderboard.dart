@@ -74,7 +74,7 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Get.offAllNamed(Routes.scoreboard),
+                onPressed: () => Navigator.pop(context),
               ),
             ),
             expandedHeight: 400,
