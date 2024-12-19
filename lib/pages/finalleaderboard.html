@@ -17,7 +17,7 @@
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
             color: white;
-            background: url('https://i.ibb.co/hLK9pgC/Untitled-design-1.gif') center/cover no-repeat;
+            background: url('https://i.ibb.co/5MfvC9T/Untitled-design.gif') center/cover no-repeat;
         }
 
         body::before {
@@ -245,40 +245,11 @@
                 transform: translateY(100vh) rotate(360deg);
             }
         }
-
-        /* Update Santa styles */
-        .santa {
-            position: fixed;
-            z-index: 3;
-            width: 600px;
-            height: 180px;
-            bottom: 120px; /* Position from bottom */
-            background: url('https://www.animatedimages.org/data/media/359/animated-santa-claus-image-0420.gif') no-repeat;
-            background-size: contain;
-            animation: flyAcross 15s linear infinite;
-        }
-
-        @keyframes flyAcross {
-            0% {
-                left: 150px;
-                transform: translateX(0);
-            }
-            100% {
-                left: -100vw;
-                transform: translateX(0);
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- Add this audio element right after body tag -->
-    <audio id="jingleSound" loop>
-        <source src="https://cdn.pixabay.com/audio/2024/11/18/audio_954cf67490.mp3" type="audio/mpeg">
-    </audio>
-    
+    <!-- Add this right after the body tag -->
     <div class="snowfall-container" id="snowfall"></div>
-    <!-- Add this right after the snowfall container -->
-    <div class="santa" id="santa"></div>
 
      <!-- Title -->
      <div class="text-center">
@@ -311,34 +282,6 @@
     </div>
 
     <script>
-        // Add these lines at the beginning of the script
-        const jingleSound = document.getElementById('jingleSound');
-        jingleSound.volume = 0.3; // Set volume to 30%
-        jingleSound.loop = true;  // Ensure loop is set to true
-
-        // Auto-play sound when page loads
-        window.addEventListener('load', function() {
-            playBackgroundMusic();
-        });
-
-        // Add play sound function
-        function playBackgroundMusic() {
-            jingleSound.play().catch(error => {
-                console.log("Audio autoplay failed:", error);
-                // Most browsers require user interaction to play audio
-                // If autoplay fails, we'll keep the original click-to-play behavior
-                document.body.addEventListener('click', function() {
-                    playBackgroundMusic();
-                }, { once: true });
-            });
-        }
-
-        function pauseBackgroundMusic() {
-            jingleSound.pause();
-        }
-
-        // Remove the previous click event listener since we're using load event now
-
         const topThreeContainer = document.getElementById('top-three');
         const leaderboardItemsContainer = document.getElementById('leaderboard-items');
 
@@ -349,8 +292,8 @@
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({ q: 'dayWiseLeaderboard' }),
-                    // body: new URLSearchParams({ q: 'latestLeaderboard' }),
+                    body: new URLSearchParams({ q: 'latestLeaderboard' }),
+                    // body: new URLSearchParams({ q: 'leaderboard',teamId:'1734595454419' }),
                 });
 
                 const data = await response.json();
@@ -389,7 +332,7 @@
         fetchLeaderboard();
 
         // Refresh leaderboard every 30 seconds
-        setInterval(fetchLeaderboard, 60000);
+        setInterval(fetchLeaderboard, 30000);
 
         // Add this snowfall animation script
         function createSnowflake() {
@@ -411,18 +354,6 @@
 
         // Create snowflakes at intervals
         setInterval(createSnowflake, 100);
-
-        // Update Santa animation function
-        function createSanta() {
-            const santa = document.getElementById('santa');
-            // Remove the height changing animation
-            santa.addEventListener('animationiteration', () => {
-                // Keep santa at the same height
-            });
-        }
-
-        // Initialize Santa
-        createSanta();
     </script>
 </body>
 </html>
