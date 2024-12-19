@@ -286,7 +286,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.flag, color: Colors.greenAccent),
-            onPressed: () => Get.offNamed(Routes.groupwiseleaderboard),
+            onPressed: () => Get.toNamed(Routes.groupwiseleaderboard),
           ),
         ],
         centerTitle: true,
