@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
 import 'package:minigolf/connection/connection.dart';
+import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/storage/get_storage.dart';
 
 import '../widgets/app_widgets.dart';
@@ -73,7 +74,7 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Get.back(),
+                onPressed: () => Get.offAllNamed(Routes.scoreboard),
               ),
             ),
             expandedHeight: 400,

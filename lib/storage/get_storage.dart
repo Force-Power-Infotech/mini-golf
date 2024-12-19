@@ -58,4 +58,15 @@ class Storage extends GetxController {
     final user = getValue('user');
     return user != null && user['userID'] != null;
   }
+
+  // Add these methods to your Storage class
+  void storeBoardId(String? boardId) {
+    if (boardId != null) {
+      box.write('boardId', boardId);
+    }
+  }
+
+  String? getBoardId() {
+    return box.read('boardId');
+  }
 }

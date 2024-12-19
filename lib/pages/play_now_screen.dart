@@ -21,7 +21,7 @@ class PlayNowScreen extends StatefulWidget {
 class _PlayNowScreenState extends State<PlayNowScreen> {
   List<Player> players = [];
   final AudioPlayer _audioPlayer = AudioPlayer();
-  int selectedHoles = 9; // Default number of holes
+  int selectedHoles = 3; // Default number of holes
   UserClass user = Storage().getUserData();
 
   @override
@@ -41,6 +41,8 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   }
 
   Future<void> _createTeam() async {
+    String? boardId = Storage().getBoardId();
+
     await ApiService().post(
       Api.baseUrl,
       data: {
@@ -49,6 +51,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
         'members':
             players.map((player) => '"${player.name}"').toList().toString(),
         'numberOfHoles': selectedHoles,
+        'boardId': boardId, // Add the boardId to the API call
       },
     ).then((response) async {
       if (response == null) {

@@ -31,7 +31,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
         ConfettiController(duration: const Duration(seconds: 3));
 
     // Get holes count from arguments
-    totalHoles = Get.arguments?['holes'] ?? 9;
+    totalHoles = Get.arguments?['holes'] ?? 3;
 
     // Load team data
     team = Storage().getTeamData();
@@ -53,8 +53,26 @@ class _ScoringScreenState extends State<ScoringScreen> {
   }
 
   Future<void> _sendInitialScores() async {
+    // Send initial scores of 0 to the server for each player
     for (var player in players) {
-      await _updateServerScore(players.indexOf(player));
+      try {
+        final response = await ApiService().post(
+          Api.baseUrl,
+          data: {
+            'q': 'scoring',
+            'uid': player.uID,
+            'teamId': player.teamID,
+            'score': 0, // Initially send 0
+          },
+        );
+
+        if (response?.statusCode != 200 || response?.data['error'] == true) {
+          AppWidgets.errorSnackBar(
+              content: response?.data['message'] ?? 'Initial score update failed');
+        }
+      } catch (e) {
+        AppWidgets.errorSnackBar(content: 'Error: $e');
+      }
     }
   }
 
@@ -137,7 +155,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
 
     // Determine the winner
     Player winner =
-        players.reduce((a, b) => a.getTotalScore() > b.getTotalScore() ? a : b);
+        players.reduce((a, b) => a.getTotalScore() < b.getTotalScore() ? a : b);
 
     // Start the confetti animation
     _confettiController.play();
@@ -231,6 +249,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    Get.offAllNamed(Routes.playnow);
                     _confettiController.stop();
                   },
                   child: const Text(
@@ -533,7 +552,7 @@ class Player {
     required this.teamID,
     required int totalHoles,
     int defaultScore = 4,
-  }) : holes = List.filled(totalHoles, defaultScore);
+  }) : holes = List.filled(totalHoles, defaultScore); // Keep UI score as 4
 
   int getTotalScore() => holes.reduce((a, b) => a + b);
 }

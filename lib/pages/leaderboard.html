@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            background: url('https://i.ibb.co/5MfvC9T/Untitled-design.gif') center/cover no-repeat;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 0;
+        }
+
+        #fullscreen-btn,
+        #leaderboard-content,
+        #loading,
+        #empty-state {
+            position: relative;
+            z-index: 1;
+        }
+
+        .glow-text {
+            font-size: 4.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(78, 205, 196, 0.5);
+            animation: titlePulse 2s infinite;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .leaderboard-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .top-three {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 20px 0;
+            gap: 20px;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        .top-three-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 20px;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.5);
+        }
+
+        .top-three-item:hover {
+            transform: translateY(-10px) rotateX(10deg);
+        }
+
+        .top-three-item::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .top-three-item .rank {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .top-three-item .name {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 15px 0;
+            color: #fff;
+        }
+
+        .top-three-item .score {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #4ECDC4, #2ECC71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: bold;
+        }
+
+        .scrollable-leaderboard {
+            max-height: 60vh;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scroll-container {
+            display: flex;
+            flex-direction: column;
+            animation: scrollUp 30s linear infinite;
+            animation-play-state: running;
+        }
+
+        .scroll-container:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollUp {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+
+        .player-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 20px;
+            padding: 15px 20px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .player-item:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .player-item:nth-child(odd) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .player-rank {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .player-score {
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .glow-text {
+                font-size: 3rem;
+            }
+
+            .top-three-item {
+                flex: 1;
+                margin: 0 5px;
+            }
+
+            .player-item {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+     <!-- Title -->
+     <div class="text-center">
+        <div class="glow-text">MINI GOLF</div>
+    </div>
+    <!-- Title -->
+    <div class="text-center">
+        <div class="glow-text">Leaderboard</div>
+    </div>
+
+    <!-- Leaderboard Wrapper -->
+    <div class="leaderboard-wrapper">
+        <!-- Top Three -->
+        <div class="top-three" id="top-three"></div>
+
+        <!-- Scrollable Leaderboard -->
+        <div class="scrollable-leaderboard">
+            <div id="leaderboard-items" class="scroll-container">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+     <!-- Footer Section -->
+     <div class="fixed bottom-4 w-full text-center bg-black bg-opacity-50 p-2">
+        <div class="flex flex-col items-center">
+            <img src="https://forcepower.in/img/logo.png" alt="ForcePower Logo" class="h-12 mb-2">
+            <p class="text-white text-lg font-semibold">Powered by ForcePower</p>
+        </div>
+    </div>
+
+    <script>
+        const topThreeContainer = document.getElementById('top-three');
+        const leaderboardItemsContainer = document.getElementById('leaderboard-items');
+
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbwy-p8bwLNYWLzfs7UYDP24MTtQN9LWgPg3Gxiv_q3iIGFWfMoO0tja3M2BfoCDS7ASww/exec', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ q: 'latestLeaderboard' }),
+                    // body: new URLSearchParams({ q: 'leaderboard',teamId:'1734595454419' }),
+                });
+
+                const data = await response.json();
+                if (data.scores && data.scores.length > 0) {
+                    const sortedScores = data.scores; // Changed sorting order
+
+                    // Top Three Players
+                    const topThreeHtml = sortedScores.slice(0, 3).map((player, index) => `
+                        <div class="top-three-item">
+                            <div class="rank">#${index + 1}</div>
+                            <div class="name">${player.userName}</div>
+                            <div class="score">${player.score}</div>
+                        </div>
+                    `).join('');
+                    topThreeContainer.innerHTML = topThreeHtml;
+
+                    // Remaining Players with ranks
+                    const remainingPlayersHtml = sortedScores.slice(3).map((player, index) => `
+                        <div class="player-item">
+                            <span class="player-rank text-4xl">${index + 4}</span>
+                            <span class="player-name text-5xl">${player.userName}</span>
+                            <span class="player-score text-6xl">${player.score}</span>
+                        </div>
+                    `).join('');
+                    leaderboardItemsContainer.innerHTML = remainingPlayersHtml;
+                } else {
+                    topThreeContainer.innerHTML = '<p>No data available</p>';
+                    leaderboardItemsContainer.innerHTML = '';
+                }
+            } catch (error) {
+                console.error('Error fetching leaderboard:', error);
+            }
+        }
+
+        // Fetch leaderboard data initially
+        fetchLeaderboard();
+
+        // Refresh leaderboard every 30 seconds
+        setInterval(fetchLeaderboard, 30000);
+    </script>
+</body>
+</html>
