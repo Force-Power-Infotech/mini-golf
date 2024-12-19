@@ -122,10 +122,7 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: fetchLeaderboardData,
-        child: const Icon(Icons.refresh),
-      ),
+      
     );
   }
 
