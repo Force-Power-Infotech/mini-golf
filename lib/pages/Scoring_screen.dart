@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
 import 'package:minigolf/connection/connection.dart';
@@ -20,7 +21,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
   late TeamClass team;
   late List<Player> players;
   int currentHole = 0;
-  late ScrollController _scrollController;
+  // late ScrollController _scrollController;
   late int totalHoles;
 
   // Add these new variables
@@ -30,7 +31,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    // _scrollController = ScrollController();
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
 
@@ -177,73 +178,73 @@ class _ScoringScreenState extends State<ScoringScreen> {
     super.dispose();
   }
 
-  Future<void> _incrementScore(int index) async {
-    setState(() {
-      players[index].holes[currentHole]++;
-    });
+  // Future<void> _incrementScore(int index) async {
+  //   setState(() {
+  //     players[index].holes[currentHole]++;
+  //   });
 
-    try {
-      final response = await ApiService().post(
-        Api.baseUrl,
-        data: {
-          'q': 'scoring',
-          'uid': players[index].uID,
-          'teamId': players[index].teamID,
-          'score': players[index].holes[currentHole],
-        },
-      );
+  //   try {
+  //     final response = await ApiService().post(
+  //       Api.baseUrl,
+  //       data: {
+  //         'q': 'scoring',
+  //         'uid': players[index].uID,
+  //         'teamId': players[index].teamID,
+  //         'score': players[index].holes[currentHole],
+  //       },
+  //     );
 
-      if (response == null || response.data == null) {
-        AppWidgets.errorSnackBar(content: 'No response from the server');
-        return;
-      }
+  //     if (response == null || response.data == null) {
+  //       AppWidgets.errorSnackBar(content: 'No response from the server');
+  //       return;
+  //     }
 
-      Map<String, dynamic> data = response.data;
+  //     Map<String, dynamic> data = response.data;
 
-      if (response.statusCode == 200 && data['error'] == false) {
-        AppWidgets.successSnackBar(content: data['message']);
-      } else {
-        AppWidgets.errorSnackBar(content: data['message']);
-      }
-    } catch (e) {
-      AppWidgets.errorSnackBar(content: 'Error: $e');
-    }
-  }
+  //     if (response.statusCode == 200 && data['error'] == false) {
+  //       AppWidgets.successSnackBar(content: data['message']);
+  //     } else {
+  //       AppWidgets.errorSnackBar(content: data['message']);
+  //     }
+  //   } catch (e) {
+  //     AppWidgets.errorSnackBar(content: 'Error: $e');
+  //   }
+  // }
 
-  Future<void> _decrementScore(int index) async {
-    if (players[index].holes[currentHole] > 0) {
-      setState(() {
-        players[index].holes[currentHole]--;
-      });
+  // Future<void> _decrementScore(int index) async {
+  //   if (players[index].holes[currentHole] > 0) {
+  //     setState(() {
+  //       players[index].holes[currentHole]--;
+  //     });
 
-      try {
-        final response = await ApiService().post(
-          Api.baseUrl,
-          data: {
-            'q': 'scoring',
-            'uid': players[index].uID,
-            'teamId': players[index].teamID,
-            'score': players[index].holes[currentHole],
-          },
-        );
+  //     try {
+  //       final response = await ApiService().post(
+  //         Api.baseUrl,
+  //         data: {
+  //           'q': 'scoring',
+  //           'uid': players[index].uID,
+  //           'teamId': players[index].teamID,
+  //           'score': players[index].holes[currentHole],
+  //         },
+  //       );
 
-        if (response == null || response.data == null) {
-          AppWidgets.errorSnackBar(content: 'No response from the server');
-          return;
-        }
+  //       if (response == null || response.data == null) {
+  //         AppWidgets.errorSnackBar(content: 'No response from the server');
+  //         return;
+  //       }
 
-        Map<String, dynamic> data = response.data;
+  //       Map<String, dynamic> data = response.data;
 
-        if (response.statusCode == 200 && data['error'] == false) {
-          AppWidgets.successSnackBar(content: data['message']);
-        } else {
-          AppWidgets.errorSnackBar(content: data['message']);
-        }
-      } catch (e) {
-        AppWidgets.errorSnackBar(content: 'Error: $e');
-      }
-    }
-  }
+  //       if (response.statusCode == 200 && data['error'] == false) {
+  //         AppWidgets.successSnackBar(content: data['message']);
+  //       } else {
+  //         AppWidgets.errorSnackBar(content: data['message']);
+  //       }
+  //     } catch (e) {
+  //       AppWidgets.errorSnackBar(content: 'Error: $e');
+  //     }
+  //   }
+  // }
 
   void _endGame() {
     if (players.isEmpty) return;
@@ -613,60 +614,60 @@ class _ScoringScreenState extends State<ScoringScreen> {
     );
   }
 
-  Widget _buildScoreButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          child: Icon(
-            icon,
-            color: color,
-            size: 36,
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildScoreButton({
+  //   required IconData icon,
+  //   required Color color,
+  //   required VoidCallback onPressed,
+  // }) {
+  //   return Material(
+  //     color: Colors.transparent,
+  //     child: InkWell(
+  //       onTap: onPressed,
+  //       borderRadius: BorderRadius.circular(30),
+  //       child: Container(
+  //         padding: const EdgeInsets.all(12),
+  //         child: Icon(
+  //           icon,
+  //           color: color,
+  //           size: 36,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  void _updateScore(int playerIndex, int change) {
-    setState(() {
-      int newScore = players[playerIndex].holes[currentHole] + change;
-      if (newScore >= 0) {
-        players[playerIndex].holes[currentHole] = newScore;
-      }
-    });
-    _updateServerScore(playerIndex);
-  }
+  // void _updateScore(int playerIndex, int change) {
+  //   setState(() {
+  //     int newScore = players[playerIndex].holes[currentHole] + change;
+  //     if (newScore >= 0) {
+  //       players[playerIndex].holes[currentHole] = newScore;
+  //     }
+  //   });
+  //   _updateServerScore(playerIndex);
+  // }
 
-  Future<void> _updateServerScore(int playerIndex) async {
-    try {
-      final response = await ApiService().post(
-        Api.baseUrl,
-        data: {
-          'q': 'scoring',
-          'uid': players[playerIndex].uID,
-          'teamId': players[playerIndex].teamID,
-          'score': players[playerIndex].getTotalScore(), // Send total score
-        },
-      );
+  // Future<void> _updateServerScore(int playerIndex) async {
+  //   try {
+  //     final response = await ApiService().post(
+  //       Api.baseUrl,
+  //       data: {
+  //         'q': 'scoring',
+  //         'uid': players[playerIndex].uID,
+  //         'teamId': players[playerIndex].teamID,
+  //         'score': players[playerIndex].getTotalScore(), // Send total score
+  //       },
+  //     );
 
-      if (response?.statusCode == 200 && response?.data['error'] == false) {
-        // Don't show success message for every update
-      } else {
-        AppWidgets.errorSnackBar(
-            content: response?.data['message'] ?? 'Update failed');
-      }
-    } catch (e) {
-      AppWidgets.errorSnackBar(content: 'Error: $e');
-    }
-  }
+  //     if (response?.statusCode == 200 && response?.data['error'] == false) {
+  //       // Don't show success message for every update
+  //     } else {
+  //       AppWidgets.errorSnackBar(
+  //           content: response?.data['message'] ?? 'Update failed');
+  //     }
+  //   } catch (e) {
+  //     AppWidgets.errorSnackBar(content: 'Error: $e');
+  //   }
+  // }
 
   Widget _buildHolesSelector() {
     return Container(

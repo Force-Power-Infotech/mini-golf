@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
 import 'package:minigolf/connection/connection.dart';
-import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/storage/get_storage.dart';
 
 import '../widgets/app_widgets.dart';

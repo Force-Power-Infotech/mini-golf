@@ -1,13 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart'; // Use just_audio
+
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/user_class.dart';
 import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/storage/get_storage.dart';
 import 'package:minigolf/widgets/app_widgets.dart';
-import 'dart:async';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,10 +23,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _otpController = TextEditingController();  // Keep this but won't show in UI
   String userId = '';
   final AudioPlayer _audioPlayer = AudioPlayer(); // Initialize just_audio player
-  bool _isOtpSent = false;
+  // bool _isOtpSent = false;
   int _timeLeft = 0;
   Timer? _timer;
-  String _displayPhone = '';  // Add this line near other state variables
+  // final String _displayPhone = '';  // Add this line near other state variables
 
   @override
   void dispose() {
@@ -105,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Storage().storeUserDate(UserClass.fromJson(data));
         AppWidgets.successSnackBar(content: data['message']);
         setState(() {
-          _isOtpSent = true;
+          // _isOtpSent = true;
         });
         Get.toNamed(Routes.home);
         // Use store data from storage below

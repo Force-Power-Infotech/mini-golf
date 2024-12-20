@@ -1,9 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:minigolf/routes/routes.dart';
 import 'package:minigolf/routes/routes_generator.dart';
 import 'package:minigolf/storage/get_storage.dart';
-import 'dart:html'; // Required for Flutter web to access query parameters
+// Required for Flutter web to access query parameters
 
 void main() {
   // Extract the boardId from the URL
@@ -25,7 +27,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Print boardId for debugging
-    print('Board ID: $boardId');
+    log('Board ID: $boardId');
 
     return GetMaterialApp(
       initialRoute: Routes.getStarted,
