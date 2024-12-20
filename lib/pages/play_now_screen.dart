@@ -21,7 +21,7 @@ class PlayNowScreen extends StatefulWidget {
 class _PlayNowScreenState extends State<PlayNowScreen> {
   List<Player> players = [];
   final AudioPlayer _audioPlayer = AudioPlayer();
-  int selectedHoles = 3; // Default number of holes
+  int selectedHoles = 2; // Default number of holes
   UserClass user = Storage().getUserData();
 
   @override
@@ -185,105 +185,112 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: MediaQuery.of(context).size.height * 0.6,
-            pinned: true,
-            backgroundColor: Colors.transparent,
-            leading: Container(
-              margin: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Get.back(),
-              ),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('Setup Game', style: TextStyle(color: Colors.white)),
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Get.back(),
+          ),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            child: ElevatedButton(
+              onPressed: _createTeam,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                child: Image.asset(
-                  'assets/images/addplayer.png',
-                  fit: BoxFit.cover,
-                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.play_arrow, size: 20),
+                  SizedBox(width: 4),
+                  Text(
+                    'Start',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                // Player List Section
-                Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  height: MediaQuery.of(context).size.height * 0.45,
-                  child: ListView.builder(
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Hole Selector Card
+                  _buildHoleSelector(),
+
+                  // Players Section Header
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Players',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.add, color: Colors.black, size: 20),
+                          label: const Text('Add Player'),
+                          onPressed: _addPlayer,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Player List
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: players.length,
                     itemBuilder: (context, index) {
                       return AnimatedPlayerCard(
                         player: players[index],
-                        onRemove: index == 0
-                            ? null
-                            : () {
-                                setState(() {
-                                  players.removeAt(index);
-                                });
-                              },
+                        onRemove: index == 0 ? null : () {
+                          setState(() => players.removeAt(index));
+                        },
                         isCurrentUser: index == 0,
                       );
                     },
                   ),
-                ),
-
-                // Add Hole Selector here
-                _buildHoleSelector(),
-
-                // Action Buttons
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.add, color: Colors.black),
-                        label: const Text('Add Player'),
-                        onPressed: _addPlayer,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orange,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 8,
-                        ),
-                      ),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.play_arrow, color: Colors.white),
-                        label: const Text('Start Game'),
-                        onPressed: _createTeam,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF00C853),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          elevation: 8,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

@@ -69,4 +69,35 @@ class Storage extends GetxController {
   String? getBoardId() {
     return box.read('boardId');
   }
+
+  void saveScores(Map<String, List<int>> scores) {
+    box.write('scores', scores);
+  }
+
+  Map<String, List<int>>? getScores() {
+    final data = box.read('scores');
+    if (data != null) {
+      return Map<String, List<int>>.from(data);
+    }
+    return null;
+  }
+
+  // Add these new methods after the existing methods
+  Future<void> write(String key, dynamic value) async {
+    try {
+      await box.write(key, value);
+    } catch (e) {
+      log('Error writing to storage: $e');
+      throw Exception('Failed to write to storage');
+    }
+  }
+
+  dynamic read(String key) {
+    try {
+      return box.read(key);
+    } catch (e) {
+      log('Error reading from storage: $e');
+      return null;
+    }
+  }
 }

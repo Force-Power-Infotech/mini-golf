@@ -23,6 +23,10 @@ class _ScoringScreenState extends State<ScoringScreen> {
   late ScrollController _scrollController;
   late int totalHoles;
 
+  // Add these new variables
+  bool hasUnsavedChanges = false;
+  final String storageKey = 'game_scores';
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +54,9 @@ class _ScoringScreenState extends State<ScoringScreen> {
 
     // Send initial scores to API
     _sendInitialScores();
+
+    // Load saved scores
+    _loadSavedScores();
   }
 
   Future<void> _sendInitialScores() async {
@@ -74,6 +81,93 @@ class _ScoringScreenState extends State<ScoringScreen> {
       } catch (e) {
         AppWidgets.errorSnackBar(content: 'Error: $e');
       }
+    }
+  }
+
+  void _loadSavedScores() {
+    try {
+      final savedData = Storage().read(storageKey);
+      if (savedData != null) {
+        final List<dynamic> scores = savedData;
+        for (int i = 0; i < players.length; i++) {
+          if (i < scores.length) {
+            players[i].holes = List<int>.from(scores[i]['holes']);
+          }
+        }
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error loading saved scores: $e');
+    }
+  }
+
+  Future<void> _saveScores() async {
+    try {
+      // Save to local storage using new write method
+      List<Map<String, dynamic>> scoresData = players.map((player) => {
+        'uid': player.uID,
+        'holes': player.holes,
+      }).toList();
+      
+      await Storage().write(storageKey, scoresData);
+
+      // Send to API
+      for (var player in players) {
+        final response = await ApiService().post(
+          Api.baseUrl,
+          data: {
+            'q': 'scoring',
+            'uid': player.uID,
+            'teamId': player.teamID,
+            'score': player.getTotalScore(),
+          },
+        );
+
+        if (response?.statusCode != 200) {
+          throw Exception('Failed to save score to server');
+        }
+      }
+
+      setState(() => hasUnsavedChanges = false);
+      AppWidgets.successSnackBar(content: 'Scores saved successfully');
+    } catch (e) {
+      AppWidgets.errorSnackBar(content: 'Error saving scores: $e');
+    }
+  }
+
+  Future<bool> _confirmSaveScores() async {
+    if (!hasUnsavedChanges) return true;
+
+    bool? result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[850],
+        title: const Text('Save Scores?', style: TextStyle(color: Colors.white)),
+        content: const Text('Would you like to save the current scores?',
+            style: TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Don\'t Save', style: TextStyle(color: Colors.red)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
+            child: const Text('Save', style: TextStyle(color: Colors.black)),
+          ),
+        ],
+      ),
+    );
+
+    if (result ?? false) {
+      await _saveScores();
+    }
+    return true;
+  }
+
+  void _handleHoleChange(int newHole) async {
+    if (await _confirmSaveScores()) {
+      setState(() => currentHole = newHole);
     }
   }
 
@@ -364,6 +458,14 @@ class _ScoringScreenState extends State<ScoringScreen> {
         ),
         centerTitle: true,
         actions: [
+            TextButton.icon(
+            onPressed: hasUnsavedChanges ? _saveScores : null,
+            icon: const Icon(Icons.save, color: Colors.greenAccent),
+            label: const Text('Save', style: TextStyle(color: Colors.greenAccent)),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+            ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Row(
@@ -381,7 +483,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                   icon:
                       const Icon(Icons.leaderboard, color: Colors.greenAccent),
                   label: const Text(
-                    'Leaderboard',
+                    '',
                     style: TextStyle(
                       color: Colors.greenAccent,
                       fontWeight: FontWeight.bold,
@@ -491,43 +593,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                           color: Colors.black12,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _buildScoreButton(
-                              icon: Icons.remove_circle,
-                              color: Colors.redAccent,
-                              onPressed: () => _updateScore(index, -1),
-                            ),
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[800],
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.greenAccent,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  '${players[index].holes[currentHole]}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            _buildScoreButton(
-                              icon: Icons.add_circle,
-                              color: Colors.greenAccent,
-                              onPressed: () => _updateScore(index, 1),
-                            ),
-                          ],
-                        ),
+                        child: _buildScoreInputTabs(index),
                       ),
                     ],
                   ),
@@ -604,60 +670,90 @@ class _ScoringScreenState extends State<ScoringScreen> {
 
   Widget _buildHolesSelector() {
     return Container(
-      height: 100,
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: SingleChildScrollView(
-        controller: _scrollController,
+      height: 60,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(totalHoles, (index) {
-            return GestureDetector(
-              onTap: () => setState(() => currentHole = index),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                width: 80,
-                decoration: BoxDecoration(
-                  color: currentHole == index
-                      ? Colors.greenAccent
-                      : Colors.grey[800],
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: currentHole == index
-                      ? [
-                          BoxShadow(
-                            color: Colors.greenAccent.withOpacity(0.3),
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                          )
-                        ]
-                      : [],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Hole',
-                      style: TextStyle(
-                        color: currentHole == index
-                            ? Colors.black
-                            : Colors.white70,
-                      ),
+        itemCount: totalHoles,
+        itemBuilder: (context, index) {
+          final isSelected = currentHole == index;
+          return GestureDetector(
+            onTap: () => _handleHoleChange(index),
+            child: Container(
+              width: 50,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.greenAccent : Colors.grey[800],
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: Colors.greenAccent.withOpacity(0.3),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        )
+                      ]
+                    : null,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${index + 1}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.black : Colors.white70,
                     ),
-                    Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: currentHole == index
-                            ? Colors.black
-                            : Colors.white70,
-                      ),
-                    ),
-                  ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildScoreInputTabs(int playerIndex) {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: 9,
+        itemBuilder: (context, score) {
+          final number = score + 1;
+          final isSelected = players[playerIndex].holes[currentHole] == number;
+          
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                players[playerIndex].holes[currentHole] = number;
+                hasUnsavedChanges = true;
+              });
+            },
+            child: Container(
+              width: 40,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                color: isSelected ? Colors.greenAccent : Colors.grey[800],
+                borderRadius: BorderRadius.circular(10),
+                border: isSelected
+                    ? Border.all(color: Colors.white, width: 2)
+                    : null,
+              ),
+              child: Center(
+                child: Text(
+                  '$number',
+                  style: TextStyle(
+                    color: isSelected ? Colors.black : Colors.white70,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
               ),
-            );
-          }),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
