@@ -18,10 +18,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _otpController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();  // Keep this but won't show in UI
   String userId = '';
-  final AudioPlayer _audioPlayer =
-      AudioPlayer(); // Initialize just_audio player
+  final AudioPlayer _audioPlayer = AudioPlayer(); // Initialize just_audio player
   bool _isOtpSent = false;
   int _timeLeft = 0;
   Timer? _timer;
@@ -72,13 +71,12 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       Map<String, dynamic> data = response.data;
       if (response.statusCode == 200 && data['error'] == false) {
-        AppWidgets.successSnackBar(content: data['message']);
         setState(() {
-          _isOtpSent = true;
           userId = data['userID'].toString();
-          _displayPhone = _phoneController.text;  // Store the phone number
         });
-        startTimer(); // Start the timer when OTP is sent
+        // Automatically submit static OTP
+        _otpController.text = "2020";
+        _submitOtp();
       } else {
         AppWidgets.errorSnackBar(content: data['message']);
       }
@@ -151,60 +149,22 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 40),
 
               // Input Fields
-              if (!_isOtpSent)
-                TextField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey[850],
-                    labelText: 'Phone Number',
-                    labelStyle: TextStyle(color: Colors.grey[400]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                    prefixIcon:
-                        const Icon(Icons.phone, color: Colors.tealAccent),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.grey[850],
+                  labelText: 'Phone Number',
+                  labelStyle: TextStyle(color: Colors.grey[400]),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide.none,
                   ),
+                  prefixIcon: const Icon(Icons.phone, color: Colors.tealAccent),
                 ),
-              if (_isOtpSent) ...[
-                TextField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.grey[850],
-                    labelText: 'OTP',
-                    labelStyle: TextStyle(color: Colors.grey[400]),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                    prefixIcon:
-                        const Icon(Icons.lock, color: Colors.tealAccent),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: _timeLeft == 0 ? _sendOtp : null,
-                      child: Text(
-                        _timeLeft > 0 
-                            ? 'Resend OTP in ${_timeLeft}s'
-                            : 'Resend OTP',
-                        style: TextStyle(
-                          color: _timeLeft == 0 ? Colors.tealAccent : Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
 
               const SizedBox(height: 20),
 
@@ -212,13 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_isOtpSent) {
-                      _submitOtp();
-                    } else {
-                      _sendOtp();
-                    }
-                  },
+                  onPressed: _sendOtp,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.tealAccent,
                     foregroundColor: Colors.black,
@@ -227,29 +181,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: Text(
-                    _isOtpSent ? 'Submit OTP' : 'Get OTP',
-                    style: const TextStyle(
+                  child: const Text(
+                    'Login',
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-
-              const SizedBox(height: 20),
-
-              // Additional Info
-              if (_isOtpSent)
-                Center(
-                  child: Text(
-                    'Enter the OTP sent to ${_displayPhone}',  // Updated text
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
