@@ -92,6 +92,16 @@ class Storage extends GetxController {
     }
   }
 
+  // remove the data from the storage
+  Future<void> remove(String key) async {
+    try {
+      await box.remove(key);
+    } catch (e) {
+      log('Error removing from storage: $e');
+      throw Exception('Failed to remove from storage');
+    }
+  }
+
   dynamic read(String key) {
     try {
       return box.read(key);

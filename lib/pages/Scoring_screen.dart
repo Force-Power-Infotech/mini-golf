@@ -254,7 +254,6 @@ class _ScoringScreenState extends State<ScoringScreen> {
   void _endGame() {
     if (players.isEmpty) return;
 
-    // Show confirmation dialog before ending the game
     showDialog(
       context: context,
       builder: (context) {
@@ -297,7 +296,9 @@ class _ScoringScreenState extends State<ScoringScreen> {
               ),
               onPressed: () {
                 Navigator.of(context).pop();
-                _showResultsDialog(); // Show results dialog
+                _showResultsDialog();
+                // Clear saved scores
+                Storage().remove(storageKey);
               },
               child: const Text(
                 'End Game',
@@ -320,6 +321,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
 
     showDialog(
       context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
       builder: (context) {
         return Stack(
           children: [
@@ -430,9 +432,10 @@ class _ScoringScreenState extends State<ScoringScreen> {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.of(context).pop();
-                        Get.offAllNamed(Routes.home);
                         _confettiController.stop();
+                        // Clear saved scores and navigate
+                        Storage().remove(storageKey);
+                        Get.offAllNamed(Routes.home);
                       },
                       child: const Text(
                         'Close',
