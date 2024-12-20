@@ -5,9 +5,9 @@ import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/widgets/app_widgets.dart';
 
 class LeaderboardModel {
-  final int uid;
+  final String uid;
   final int score;
-  final bool status;
+  final String status;
   final DateTime lastUpdated;
   final String userName;
 
@@ -23,7 +23,7 @@ class LeaderboardModel {
     return LeaderboardModel(
       uid: json['uid'],
       score: json['score'],
-      status: json['status'],
+      status: json['status'].toString(),
       lastUpdated: DateTime.parse(json['lastUpdated']),
       userName: json['userName'],
     );

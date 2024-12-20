@@ -46,8 +46,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
         ? team.members!
             .map((member) => Player(
                 name: member.userName ?? '',
-                uID: member.userID ?? 0,
-                teamID: team.teamId ?? 0,
+                uID: member.userID ?? '',
+                teamID: team.teamId ?? '',
                 totalHoles: totalHoles,
                 defaultScore: 0))
             .toList()
@@ -105,11 +105,13 @@ class _ScoringScreenState extends State<ScoringScreen> {
   Future<void> _saveScores() async {
     try {
       // Save to local storage using new write method
-      List<Map<String, dynamic>> scoresData = players.map((player) => {
-        'uid': player.uID,
-        'holes': player.holes,
-      }).toList();
-      
+      List<Map<String, dynamic>> scoresData = players
+          .map((player) => {
+                'uid': player.uID,
+                'holes': player.holes,
+              })
+          .toList();
+
       await Storage().write(storageKey, scoresData);
 
       // Send to API
@@ -143,17 +145,20 @@ class _ScoringScreenState extends State<ScoringScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[850],
-        title: const Text('Save Scores?', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Save Scores?', style: TextStyle(color: Colors.white)),
         content: const Text('Would you like to save the current scores?',
             style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Don\'t Save', style: TextStyle(color: Colors.red)),
+            child:
+                const Text('Don\'t Save', style: TextStyle(color: Colors.red)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
             child: const Text('Save', style: TextStyle(color: Colors.black)),
           ),
         ],
@@ -306,146 +311,147 @@ class _ScoringScreenState extends State<ScoringScreen> {
   }
 
   void _showResultsDialog() {
-  // Determine the winner
-  Player winner =
-      players.reduce((a, b) => a.getTotalScore() < b.getTotalScore() ? a : b);
+    // Determine the winner
+    Player winner =
+        players.reduce((a, b) => a.getTotalScore() < b.getTotalScore() ? a : b);
 
-  // Start the confetti animation
-  _confettiController.play();
+    // Start the confetti animation
+    _confettiController.play();
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Stack(
-        children: [
-          // Confetti overlay
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              emissionFrequency: 0.05,
-              numberOfParticles: 30,
-              colors: const [
-                Colors.red,
-                Colors.green,
-                Colors.blue,
-                Colors.yellow,
-              ],
-            ),
-          ),
-          Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: AlertDialog(
-                backgroundColor: Colors.black87,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                title: Column(
-                  children: [
-                    const Text(
-                      '🎉 Congratulations! 🎉',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.greenAccent,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      '${winner.name} is the Winner!',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Divider(
-                      color: Colors.white.withOpacity(0.3),
-                      thickness: 1,
-                    ),
-                  ],
-                ),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: players
-                        .map((player) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    player.name,
-                                    style: TextStyle(
-                                      color: player == winner
-                                          ? Colors.greenAccent
-                                          : Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: player == winner
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                  Text(
-                                    player.getTotalScore().toString(),
-                                    style: TextStyle(
-                                      color: player == winner
-                                          ? Colors.greenAccent
-                                          : Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: player == winner
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                ),
-                actionsAlignment: MainAxisAlignment.center,
-                actions: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Get.offAllNamed(Routes.playnow);
-                      _confettiController.stop();
-                    },
-                    child: const Text(
-                      'Close',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Stack(
+          children: [
+            // Confetti overlay
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                emissionFrequency: 0.05,
+                numberOfParticles: 30,
+                colors: const [
+                  Colors.red,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.yellow,
                 ],
               ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: AlertDialog(
+                  backgroundColor: Colors.black87,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  title: Column(
+                    children: [
+                      const Text(
+                        '🎉 Congratulations! 🎉',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.greenAccent,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        '${winner.name} is the Winner!',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(
+                        color: Colors.white.withOpacity(0.3),
+                        thickness: 1,
+                      ),
+                    ],
+                  ),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: players
+                          .map((player) => Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      player.name,
+                                      style: TextStyle(
+                                        color: player == winner
+                                            ? Colors.greenAccent
+                                            : Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: player == winner
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    Text(
+                                      player.getTotalScore().toString(),
+                                      style: TextStyle(
+                                        color: player == winner
+                                            ? Colors.greenAccent
+                                            : Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: player == winner
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  actionsAlignment: MainAxisAlignment.center,
+                  actions: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Get.offAllNamed(Routes.home);
+                        _confettiController.stop();
+                      },
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -459,14 +465,15 @@ class _ScoringScreenState extends State<ScoringScreen> {
         ),
         centerTitle: true,
         actions: [
-            TextButton.icon(
+          TextButton.icon(
             onPressed: hasUnsavedChanges ? _saveScores : null,
             icon: const Icon(Icons.save, color: Colors.greenAccent),
-            label: const Text('Save', style: TextStyle(color: Colors.greenAccent)),
+            label:
+                const Text('Save', style: TextStyle(color: Colors.greenAccent)),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
-            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Row(
@@ -725,7 +732,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
         itemBuilder: (context, score) {
           final number = score + 1;
           final isSelected = players[playerIndex].holes[currentHole] == number;
-          
+
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -748,7 +755,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
                   '$number',
                   style: TextStyle(
                     color: isSelected ? Colors.black : Colors.white70,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
@@ -763,8 +771,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
 class Player {
   String name;
   List<int> holes;
-  int uID;
-  int teamID;
+  String uID;
+  String teamID;
 
   Player({
     required this.name,

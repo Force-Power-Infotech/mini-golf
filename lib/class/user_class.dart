@@ -1,12 +1,12 @@
 class UserClass {
-  bool? error;
+  String? error;
   String? message;
-  int? userID;
-  int? mobileNo;
-  int? otp;
+  String? userID;
+  String? mobileNo;
+  String? otp;
   String? name;
   String? lastLogin;
-  bool? active;
+  String? active;
 
   UserClass(
       {this.error,
@@ -19,14 +19,14 @@ class UserClass {
       this.active});
 
   UserClass.fromJson(Map<String, dynamic> json) {
-    error = json['error'];
-    message = json['message'];
-    userID = json['userID'];
-    mobileNo = json['mobileNo'];
-    otp = json['otp'];
-    name = json['name'];
-    lastLogin = json['lastLogin'];
-    active = json['active'];
+    error = json['error'].toString();
+    message = json['message'].toString();
+    userID = json['userID'].toString();
+    mobileNo = json['mobileNo'].toString();
+    otp = json['otp'].toString();
+    name = json['name'].toString();
+    lastLogin = json['lastLogin'].toString();
+    active = json['active'].toString();
   }
 
   Map<String, dynamic> toJson() {

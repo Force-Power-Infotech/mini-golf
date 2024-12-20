@@ -8,9 +8,9 @@ import 'package:minigolf/storage/get_storage.dart';
 import '../widgets/app_widgets.dart';
 
 class LeaderboardModel {
-  final int uid;
+  final String uid;
   final int score;
-  final bool status;
+  final String status;
   final DateTime lastUpdated;
   final String userName;
 
@@ -24,9 +24,9 @@ class LeaderboardModel {
 
   factory LeaderboardModel.fromJson(Map<String, dynamic> json) {
     return LeaderboardModel(
-      uid: json['uid'],
+      uid: json['uid'].toString(),
       score: json['score'],
-      status: json['status'],
+      status: json['status'].toString(),
       lastUpdated: DateTime.parse(json['lastUpdated']),
       userName: json['userName'],
     );
@@ -120,7 +120,6 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
           ),
         ],
       ),
-      
     );
   }
 

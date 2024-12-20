@@ -1,7 +1,7 @@
 class TeamClass {
-  bool? error;
+  String? error;
   String? message;
-  int? teamId;
+  String? teamId;
   String? createdBy;
   List<Members>? members;
   String? createDateTime;
@@ -15,17 +15,17 @@ class TeamClass {
       this.createDateTime});
 
   TeamClass.fromJson(Map<String, dynamic> json) {
-    error = json['error'];
-    message = json['message'];
-    teamId = json['teamId'];
-    createdBy = json['createdBy'];
+    error = json['error'].toString();
+    message = json['message'].toString();
+    teamId = json['teamId'].toString();
+    createdBy = json['createdBy'].toString();
     if (json['members'] != null) {
       members = <Members>[];
       json['members'].forEach((v) {
         members!.add(Members.fromJson(v));
       });
     }
-    createDateTime = json['createDateTime'];
+    createDateTime = json['createDateTime'].toString();
   }
 
   Map<String, dynamic> toJson() {
@@ -43,14 +43,14 @@ class TeamClass {
 }
 
 class Members {
-  int? userID;
+  String? userID;
   String? userName;
 
   Members({this.userID, this.userName});
 
   Members.fromJson(Map<String, dynamic> json) {
-    userID = json['userID'];
-    userName = json['userName'];
+    userID = json['userID'].toString();
+    userName = json['userName'].toString();
   }
 
   Map<String, dynamic> toJson() {
