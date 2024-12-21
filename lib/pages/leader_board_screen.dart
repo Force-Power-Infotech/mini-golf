@@ -120,10 +120,7 @@ class _LeaderBoardScreenState extends State<LeaderBoardScreen> {
           ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: fetchLeaderboardData,
-      //   child: const Icon(Icons.refresh),
-      // ),
+     
     );
   }
 
@@ -188,6 +185,7 @@ class _LeaderBoardScreenState extends State<LeaderBoardScreen> {
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
+              fontSize: 20
             ),
           ),
           Text(
