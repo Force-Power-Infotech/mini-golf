@@ -9,7 +9,7 @@ import '../widgets/app_widgets.dart';
 
 class LeaderboardModel {
   final String uid;
-  final int score;
+  final int? score;
   final String status;
   final DateTime lastUpdated;
   final String userName;
@@ -57,7 +57,7 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
   @override
   Widget build(BuildContext context) {
     final sortedScores = [...scores]
-      ..sort((a, b) => a.score.compareTo(b.score));
+      ..sort((a, b) => (a.score ?? 0).compareTo(b.score ?? 0));
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -185,7 +185,7 @@ class _GroupWiseLeaderboardState extends State<GroupWiseLeaderboard> {
             ),
           ),
           Text(
-            '${player.score}',
+            '${player.score ?? ''}',
             style: TextStyle(
               color: highlight ? Colors.amber : Colors.white,
               fontWeight: FontWeight.bold,

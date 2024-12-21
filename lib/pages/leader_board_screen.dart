@@ -6,7 +6,7 @@ import 'package:minigolf/widgets/app_widgets.dart';
 
 class LeaderboardModel {
   final String uid;
-  final int score;
+  final int? score;
   final String status;
   final DateTime lastUpdated;
   final String userName;
@@ -50,7 +50,7 @@ class _LeaderBoardScreenState extends State<LeaderBoardScreen> {
   @override
   Widget build(BuildContext context) {
     final sortedScores = [...scores]
-      ..sort((a, b) => a.score.compareTo(b.score));
+      ..sort((a, b) => (a.score ?? 0).compareTo(b.score ?? 0));
 
     return Scaffold(
       backgroundColor: Colors.black,

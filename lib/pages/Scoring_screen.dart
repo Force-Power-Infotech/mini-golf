@@ -54,36 +54,36 @@ class _ScoringScreenState extends State<ScoringScreen> {
         : [];
 
     // Send initial scores to API
-    _sendInitialScores();
+    // _sendInitialScores();
 
     // Load saved scores
     _loadSavedScores();
   }
 
-  Future<void> _sendInitialScores() async {
-    // Send initial scores of 0 to the server for each player
-    for (var player in players) {
-      try {
-        final response = await ApiService().post(
-          Api.baseUrl,
-          data: {
-            'q': 'scoring',
-            'uid': player.uID,
-            'teamId': player.teamID,
-            'score': 0, // Initially send 0
-          },
-        );
+  // Future<void> _sendInitialScores() async {
+  //   // Send initial scores of 0 to the server for each player
+  //   for (var player in players) {
+  //     try {
+  //       final response = await ApiService().post(
+  //         Api.baseUrl,
+  //         data: {
+  //           'q': 'scoring',
+  //           'uid': player.uID,
+  //           'teamId': player.teamID,
+  //           'score': 0, // Initially send 0
+  //         },
+  //       );
 
-        if (response?.statusCode != 200 || response?.data['error'] == true) {
-          AppWidgets.errorSnackBar(
-              content:
-                  response?.data['message'] ?? 'Initial score update failed');
-        }
-      } catch (e) {
-        AppWidgets.errorSnackBar(content: 'Error: $e');
-      }
-    }
-  }
+  //       if (response?.statusCode != 200 || response?.data['error'] == true) {
+  //         AppWidgets.errorSnackBar(
+  //             content:
+  //                 response?.data['message'] ?? 'Initial score update failed');
+  //       }
+  //     } catch (e) {
+  //       AppWidgets.errorSnackBar(content: 'Error: $e');
+  //     }
+  //   }
+  // }
 
   void _loadSavedScores() {
     try {
