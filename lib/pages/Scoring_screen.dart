@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
 import 'package:minigolf/connection/connection.dart';
@@ -20,7 +21,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
   late TeamClass team;
   late List<Player> players;
   int currentHole = 0;
-  late ScrollController _scrollController;
+  // late ScrollController _scrollController;
   late int totalHoles;
 
   // Add these new variables
@@ -30,7 +31,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    // _scrollController = ScrollController();
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
 
@@ -53,36 +54,36 @@ class _ScoringScreenState extends State<ScoringScreen> {
         : [];
 
     // Send initial scores to API
-    _sendInitialScores();
+    // _sendInitialScores();
 
     // Load saved scores
     _loadSavedScores();
   }
 
-  Future<void> _sendInitialScores() async {
-    // Send initial scores of 0 to the server for each player
-    for (var player in players) {
-      try {
-        final response = await ApiService().post(
-          Api.baseUrl,
-          data: {
-            'q': 'scoring',
-            'uid': player.uID,
-            'teamId': player.teamID,
-            'score': 0, // Initially send 0
-          },
-        );
+  // Future<void> _sendInitialScores() async {
+  //   // Send initial scores of 0 to the server for each player
+  //   for (var player in players) {
+  //     try {
+  //       final response = await ApiService().post(
+  //         Api.baseUrl,
+  //         data: {
+  //           'q': 'scoring',
+  //           'uid': player.uID,
+  //           'teamId': player.teamID,
+  //           'score': 0, // Initially send 0
+  //         },
+  //       );
 
-        if (response?.statusCode != 200 || response?.data['error'] == true) {
-          AppWidgets.errorSnackBar(
-              content:
-                  response?.data['message'] ?? 'Initial score update failed');
-        }
-      } catch (e) {
-        AppWidgets.errorSnackBar(content: 'Error: $e');
-      }
-    }
-  }
+  //       if (response?.statusCode != 200 || response?.data['error'] == true) {
+  //         AppWidgets.errorSnackBar(
+  //             content:
+  //                 response?.data['message'] ?? 'Initial score update failed');
+  //       }
+  //     } catch (e) {
+  //       AppWidgets.errorSnackBar(content: 'Error: $e');
+  //     }
+  //   }
+  // }
 
   void _loadSavedScores() {
     try {
@@ -104,11 +105,13 @@ class _ScoringScreenState extends State<ScoringScreen> {
   Future<void> _saveScores() async {
     try {
       // Save to local storage using new write method
-      List<Map<String, dynamic>> scoresData = players.map((player) => {
-        'uid': player.uID,
-        'holes': player.holes,
-      }).toList();
-      
+      List<Map<String, dynamic>> scoresData = players
+          .map((player) => {
+                'uid': player.uID,
+                'holes': player.holes,
+              })
+          .toList();
+
       await Storage().write(storageKey, scoresData);
 
       // Send to API
@@ -142,17 +145,20 @@ class _ScoringScreenState extends State<ScoringScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[850],
-        title: const Text('Save Scores?', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Save Scores?', style: TextStyle(color: Colors.white)),
         content: const Text('Would you like to save the current scores?',
             style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Don\'t Save', style: TextStyle(color: Colors.red)),
+            child:
+                const Text('Don\'t Save', style: TextStyle(color: Colors.red)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
+            style:
+                ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
             child: const Text('Save', style: TextStyle(color: Colors.black)),
           ),
         ],
@@ -177,277 +183,278 @@ class _ScoringScreenState extends State<ScoringScreen> {
     super.dispose();
   }
 
-  Future<void> _incrementScore(int index) async {
-    setState(() {
-      players[index].holes[currentHole]++;
-    });
+  // Future<void> _incrementScore(int index) async {
+  //   setState(() {
+  //     players[index].holes[currentHole]++;
+  //   });
 
-    try {
-      final response = await ApiService().post(
-        Api.baseUrl,
-        data: {
-          'q': 'scoring',
-          'uid': players[index].uID,
-          'teamId': players[index].teamID,
-          'score': players[index].holes[currentHole],
-        },
-      );
+  //   try {
+  //     final response = await ApiService().post(
+  //       Api.baseUrl,
+  //       data: {
+  //         'q': 'scoring',
+  //         'uid': players[index].uID,
+  //         'teamId': players[index].teamID,
+  //         'score': players[index].holes[currentHole],
+  //       },
+  //     );
 
-      if (response == null || response.data == null) {
-        AppWidgets.errorSnackBar(content: 'No response from the server');
-        return;
-      }
+  //     if (response == null || response.data == null) {
+  //       AppWidgets.errorSnackBar(content: 'No response from the server');
+  //       return;
+  //     }
 
-      Map<String, dynamic> data = response.data;
+  //     Map<String, dynamic> data = response.data;
 
-      if (response.statusCode == 200 && data['error'] == false) {
-        AppWidgets.successSnackBar(content: data['message']);
-      } else {
-        AppWidgets.errorSnackBar(content: data['message']);
-      }
-    } catch (e) {
-      AppWidgets.errorSnackBar(content: 'Error: $e');
-    }
-  }
+  //     if (response.statusCode == 200 && data['error'] == false) {
+  //       AppWidgets.successSnackBar(content: data['message']);
+  //     } else {
+  //       AppWidgets.errorSnackBar(content: data['message']);
+  //     }
+  //   } catch (e) {
+  //     AppWidgets.errorSnackBar(content: 'Error: $e');
+  //   }
+  // }
 
-  Future<void> _decrementScore(int index) async {
-    if (players[index].holes[currentHole] > 0) {
-      setState(() {
-        players[index].holes[currentHole]--;
-      });
+  // Future<void> _decrementScore(int index) async {
+  //   if (players[index].holes[currentHole] > 0) {
+  //     setState(() {
+  //       players[index].holes[currentHole]--;
+  //     });
 
-      try {
-        final response = await ApiService().post(
-          Api.baseUrl,
-          data: {
-            'q': 'scoring',
-            'uid': players[index].uID,
-            'teamId': players[index].teamID,
-            'score': players[index].holes[currentHole],
-          },
-        );
+  //     try {
+  //       final response = await ApiService().post(
+  //         Api.baseUrl,
+  //         data: {
+  //           'q': 'scoring',
+  //           'uid': players[index].uID,
+  //           'teamId': players[index].teamID,
+  //           'score': players[index].holes[currentHole],
+  //         },
+  //       );
 
-        if (response == null || response.data == null) {
-          AppWidgets.errorSnackBar(content: 'No response from the server');
-          return;
-        }
+  //       if (response == null || response.data == null) {
+  //         AppWidgets.errorSnackBar(content: 'No response from the server');
+  //         return;
+  //       }
 
-        Map<String, dynamic> data = response.data;
+  //       Map<String, dynamic> data = response.data;
 
-        if (response.statusCode == 200 && data['error'] == false) {
-          AppWidgets.successSnackBar(content: data['message']);
-        } else {
-          AppWidgets.errorSnackBar(content: data['message']);
-        }
-      } catch (e) {
-        AppWidgets.errorSnackBar(content: 'Error: $e');
-      }
-    }
-  }
+  //       if (response.statusCode == 200 && data['error'] == false) {
+  //         AppWidgets.successSnackBar(content: data['message']);
+  //       } else {
+  //         AppWidgets.errorSnackBar(content: data['message']);
+  //       }
+  //     } catch (e) {
+  //       AppWidgets.errorSnackBar(content: 'Error: $e');
+  //     }
+  //   }
+  // }
 
-  void _endGame() async {
-  if (players.isEmpty) return;
+  void _endGame() {
+    if (players.isEmpty) return;
 
-  // Show confirmation dialog before ending the game
-  bool? shouldEnd = await showDialog<bool>(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        backgroundColor: Colors.grey[850],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'End Game?',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[850],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        ),
-        content: const Text(
-          'Are you sure you want to end the game? This action will save your scores and display the results.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 16,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.greenAccent),
+          title: const Text(
+            'End Game?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          content: const Text(
+            'Are you sure you want to end the game? This action will display the results and cannot be undone.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.greenAccent),
               ),
             ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'End Game',
-              style: TextStyle(color: Colors.white),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _showResultsDialog();
+                // Clear saved scores
+                Storage().remove(storageKey);
+              },
+              child: const Text(
+                'End Game',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-
-  if (shouldEnd == true) {
-    // Save scores before showing results
-    await _saveScores();
-    _showResultsDialog();
+          ],
+        );
+      },
+    );
   }
-}
 
   void _showResultsDialog() {
-  // Determine the winner
-  Player winner =
-      players.reduce((a, b) => a.getTotalScore() < b.getTotalScore() ? a : b);
+    // Determine the winner
+    Player winner =
+        players.reduce((a, b) => a.getTotalScore() < b.getTotalScore() ? a : b);
 
-  // Start the confetti animation
-  _confettiController.play();
+    // Start the confetti animation
+    _confettiController.play();
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return Stack(
-        children: [
-          // Confetti overlay
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              emissionFrequency: 0.05,
-              numberOfParticles: 30,
-              colors: const [
-                Colors.red,
-                Colors.green,
-                Colors.blue,
-                Colors.yellow,
-              ],
-            ),
-          ),
-          Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: AlertDialog(
-                backgroundColor: Colors.black87,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                title: Column(
-                  children: [
-                    const Text(
-                      '🎉 Congratulations! 🎉',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.greenAccent,
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      '${winner.name} is the Winner!',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Divider(
-                      color: Colors.white.withOpacity(0.3),
-                      thickness: 1,
-                    ),
-                  ],
-                ),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: players
-                        .map((player) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    player.name,
-                                    style: TextStyle(
-                                      color: player == winner
-                                          ? Colors.greenAccent
-                                          : Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: player == winner
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                  Text(
-                                    player.getTotalScore().toString(),
-                                    style: TextStyle(
-                                      color: player == winner
-                                          ? Colors.greenAccent
-                                          : Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: player == winner
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                ),
-                actionsAlignment: MainAxisAlignment.center,
-                actions: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Get.offAllNamed(Routes.playnow);
-                      _confettiController.stop();
-                    },
-                    child: const Text(
-                      'Close',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (context) {
+        return Stack(
+          children: [
+            // Confetti overlay
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                emissionFrequency: 0.05,
+                numberOfParticles: 30,
+                colors: const [
+                  Colors.red,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.yellow,
                 ],
               ),
             ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: AlertDialog(
+                  backgroundColor: Colors.black87,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  title: Column(
+                    children: [
+                      const Text(
+                        '🎉 Congratulations! 🎉',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.greenAccent,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        '${winner.name} is the Winner!',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(
+                        color: Colors.white.withOpacity(0.3),
+                        thickness: 1,
+                      ),
+                    ],
+                  ),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: players
+                          .map((player) => Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6.0),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      player.name,
+                                      style: TextStyle(
+                                        color: player == winner
+                                            ? Colors.greenAccent
+                                            : Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: player == winner
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    Text(
+                                      player.getTotalScore().toString(),
+                                      style: TextStyle(
+                                        color: player == winner
+                                            ? Colors.greenAccent
+                                            : Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: player == winner
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  actionsAlignment: MainAxisAlignment.center,
+                  actions: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        _confettiController.stop();
+                        // Clear saved scores and navigate
+                        Storage().remove(storageKey);
+                        Get.offAllNamed(Routes.home);
+                      },
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -461,14 +468,15 @@ class _ScoringScreenState extends State<ScoringScreen> {
         ),
         centerTitle: true,
         actions: [
-            TextButton.icon(
+          TextButton.icon(
             onPressed: hasUnsavedChanges ? _saveScores : null,
             icon: const Icon(Icons.save, color: Colors.greenAccent),
-            label: const Text('Save', style: TextStyle(color: Colors.greenAccent)),
+            label:
+                const Text('Save', style: TextStyle(color: Colors.greenAccent)),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
-            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Row(
@@ -616,60 +624,60 @@ class _ScoringScreenState extends State<ScoringScreen> {
     );
   }
 
-  Widget _buildScoreButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          child: Icon(
-            icon,
-            color: color,
-            size: 36,
-          ),
-        ),
-      ),
-    );
-  }
+  // Widget _buildScoreButton({
+  //   required IconData icon,
+  //   required Color color,
+  //   required VoidCallback onPressed,
+  // }) {
+  //   return Material(
+  //     color: Colors.transparent,
+  //     child: InkWell(
+  //       onTap: onPressed,
+  //       borderRadius: BorderRadius.circular(30),
+  //       child: Container(
+  //         padding: const EdgeInsets.all(12),
+  //         child: Icon(
+  //           icon,
+  //           color: color,
+  //           size: 36,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  void _updateScore(int playerIndex, int change) {
-    setState(() {
-      int newScore = players[playerIndex].holes[currentHole] + change;
-      if (newScore >= 0) {
-        players[playerIndex].holes[currentHole] = newScore;
-      }
-    });
-    _updateServerScore(playerIndex);
-  }
+  // void _updateScore(int playerIndex, int change) {
+  //   setState(() {
+  //     int newScore = players[playerIndex].holes[currentHole] + change;
+  //     if (newScore >= 0) {
+  //       players[playerIndex].holes[currentHole] = newScore;
+  //     }
+  //   });
+  //   _updateServerScore(playerIndex);
+  // }
 
-  Future<void> _updateServerScore(int playerIndex) async {
-    try {
-      final response = await ApiService().post(
-        Api.baseUrl,
-        data: {
-          'q': 'scoring',
-          'uid': players[playerIndex].uID,
-          'teamId': players[playerIndex].teamID,
-          'score': players[playerIndex].getTotalScore(), // Send total score
-        },
-      );
+  // Future<void> _updateServerScore(int playerIndex) async {
+  //   try {
+  //     final response = await ApiService().post(
+  //       Api.baseUrl,
+  //       data: {
+  //         'q': 'scoring',
+  //         'uid': players[playerIndex].uID,
+  //         'teamId': players[playerIndex].teamID,
+  //         'score': players[playerIndex].getTotalScore(), // Send total score
+  //       },
+  //     );
 
-      if (response?.statusCode == 200 && response?.data['error'] == false) {
-        // Don't show success message for every update
-      } else {
-        AppWidgets.errorSnackBar(
-            content: response?.data['message'] ?? 'Update failed');
-      }
-    } catch (e) {
-      AppWidgets.errorSnackBar(content: 'Error: $e');
-    }
-  }
+  //     if (response?.statusCode == 200 && response?.data['error'] == false) {
+  //       // Don't show success message for every update
+  //     } else {
+  //       AppWidgets.errorSnackBar(
+  //           content: response?.data['message'] ?? 'Update failed');
+  //     }
+  //   } catch (e) {
+  //     AppWidgets.errorSnackBar(content: 'Error: $e');
+  //   }
+  // }
 
   Widget _buildHolesSelector() {
     return Container(
@@ -727,7 +735,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
         itemBuilder: (context, score) {
           final number = score + 1;
           final isSelected = players[playerIndex].holes[currentHole] == number;
-          
+
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -750,7 +758,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
                   '$number',
                   style: TextStyle(
                     color: isSelected ? Colors.black : Colors.white70,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
