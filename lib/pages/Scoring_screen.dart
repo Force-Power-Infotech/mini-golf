@@ -245,64 +245,67 @@ class _ScoringScreenState extends State<ScoringScreen> {
     }
   }
 
-  void _endGame() {
-    if (players.isEmpty) return;
+  void _endGame() async {
+  if (players.isEmpty) return;
 
-    // Show confirmation dialog before ending the game
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[850],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+  // Show confirmation dialog before ending the game
+  bool? shouldEnd = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        backgroundColor: Colors.grey[850],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          'End Game?',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
           ),
-          title: const Text(
-            'End Game?',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+        ),
+        content: const Text(
+          'Are you sure you want to end the game? This action will save your scores and display the results.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 16,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.greenAccent),
             ),
           ),
-          content: const Text(
-            'Are you sure you want to end the game? This action will display the results and cannot be undone.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.greenAccent),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showResultsDialog(); // Show results dialog
-              },
-              child: const Text(
-                'End Game',
-                style: TextStyle(color: Colors.white),
-              ),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              'End Game',
+              style: TextStyle(color: Colors.white),
             ),
-          ],
-        );
-      },
-    );
+          ),
+        ],
+      );
+    },
+  );
+
+  if (shouldEnd == true) {
+    // Save scores before showing results
+    await _saveScores();
+    _showResultsDialog();
   }
+}
 
   void _showResultsDialog() {
   // Determine the winner
