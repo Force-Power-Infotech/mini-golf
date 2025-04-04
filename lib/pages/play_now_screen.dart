@@ -21,8 +21,19 @@ class PlayNowScreen extends StatefulWidget {
 class _PlayNowScreenState extends State<PlayNowScreen> {
   List<Player> players = [];
   final AudioPlayer _audioPlayer = AudioPlayer();
-  int selectedHoles = 2; // Default number of holes
+  int selectedHoles = 9; // Default number of holes
   UserClass user = Storage().getUserData();
+  String teamName = '';
+  final List<String> _teamSuggestions = [
+    'Team Alpha',
+    'Team Beta',
+    'The Champions',
+    'Golf Stars',
+    'Putting Masters',
+    'Eagle Squad',
+    'Birdie Gang',
+    'Par Force'
+  ];
 
   @override
   void initState() {
@@ -41,34 +52,22 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   }
 
   Future<void> _createTeam() async {
-    String? boardId = Storage().getBoardId();
+    // Demo data for testing
+    Map<String, dynamic> demoResponse = {
+      'error': false,
+      'message': 'Team created successfully!',
+      'teamId': '12345',
+      'teamName': teamName.isEmpty ? 'Demo Team' : teamName,
+      'createdBy': user.userID,
+      'members': players.map((player) => player.name).toList(),
+      'numberOfHoles': selectedHoles,
+      'status': 'active'
+    };
 
-    await ApiService().post(
-      Api.baseUrl,
-      data: {
-        'q': 'createTeam',
-        'createdBy': user.userID,
-        'members':
-            players.map((player) => '"${player.name}"').toList().toString(),
-        'numberOfHoles': selectedHoles,
-        'boardId': boardId, // Add the boardId to the API call
-      },
-    ).then((response) async {
-      if (response == null) {
-        AppWidgets.errorSnackBar(content: 'No response from server');
-        return;
-      }
-      Map<String, dynamic> data = response.data;
-      if (response.statusCode == 200 && data['error'] == false) {
-        Storage().storeTeamDate(TeamClass.fromJson(data));
-        AppWidgets.successSnackBar(content: data['message']);
-        Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
-      } else {
-        AppWidgets.errorSnackBar(content: data['message']);
-      }
-    }).catchError((e) {
-      AppWidgets.errorSnackBar(content: 'Error: $e');
-    });
+    // Store demo data
+    Storage().storeTeamDate(TeamClass.fromJson(demoResponse));
+    AppWidgets.successSnackBar(content: demoResponse['message']);
+    Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
   }
 
   void _addPlayer() {
@@ -239,7 +238,6 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Hole Selector Card
                   _buildHoleSelector(),
 
                   // Players Section Header
@@ -257,13 +255,15 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                           ),
                         ),
                         ElevatedButton.icon(
-                          icon: const Icon(Icons.add, color: Colors.black, size: 20),
+                          icon: const Icon(Icons.add,
+                              color: Colors.black, size: 20),
                           label: const Text('Add Player'),
                           onPressed: _addPlayer,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.orange,
                             foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -282,9 +282,11 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                     itemBuilder: (context, index) {
                       return AnimatedPlayerCard(
                         player: players[index],
-                        onRemove: index == 0 ? null : () {
-                          setState(() => players.removeAt(index));
-                        },
+                        onRemove: index == 0
+                            ? null
+                            : () {
+                                setState(() => players.removeAt(index));
+                              },
                         isCurrentUser: index == 0,
                       );
                     },
@@ -357,63 +359,97 @@ class AnimatedPlayerCard extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
+              Row(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: CircleAvatar(
-                  radius: 30,
-                  backgroundColor:
-                      isCurrentUser ? Colors.orange : const Color(0xFF3A3A3A),
-                  child: Text(
-                    _getInitials(player.name),
-                    style: TextStyle(
-                      color: isCurrentUser ? Colors.black : Colors.white70,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                    child: CircleAvatar(
+                      radius: 30,
+                      backgroundColor: isCurrentUser
+                          ? Colors.orange
+                          : const Color(0xFF3A3A3A),
+                      child: Text(
+                        _getInitials(player.name),
+                        style: TextStyle(
+                          color: isCurrentUser ? Colors.black : Colors.white70,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isCurrentUser)
+                          TextField(
+                            onChanged: (value) => context
+                                .findAncestorStateOfType<_PlayNowScreenState>()
+                                ?.setState(() => teamName = value),
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              labelText: 'Team Name (optional)',
+                              labelStyle: TextStyle(
+                                color: Colors.grey[400],
+                                fontSize: 14,
+                              ),
+                              enabledBorder: UnderlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.grey[700]!),
+                              ),
+                              focusedBorder: const UnderlineInputBorder(
+                                borderSide: BorderSide(color: Colors.orange),
+                              ),
+                            ),
+                          ),
+                        TextField(
+                          controller: TextEditingController(text: player.name),
+                          enabled: !isCurrentUser,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: isCurrentUser
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: isCurrentUser
+                                ? 'Current Player'
+                                : 'Player Name',
+                            labelStyle: TextStyle(
+                              color: Colors.grey[400],
+                              fontSize: 14,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey[700]!),
+                            ),
+                            focusedBorder: const UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.orange),
+                            ),
+                          ),
+                          onChanged: (value) => player.name = value,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (onRemove != null)
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: onRemove,
+                    ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextField(
-                  controller: TextEditingController(text: player.name),
-                  enabled: !isCurrentUser,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight:
-                        isCurrentUser ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: isCurrentUser ? 'Current Player' : 'Player Name',
-                    labelStyle: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                    ),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey[700]!),
-                    ),
-                    focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.orange),
-                    ),
-                  ),
-                  onChanged: (value) => player.name = value,
-                ),
-              ),
-              if (onRemove != null)
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.redAccent),
-                  onPressed: onRemove,
-                ),
             ],
           ),
         ),
