@@ -28,6 +28,9 @@ class _ScoringScreenState extends State<ScoringScreen> {
   bool hasUnsavedChanges = false;
   final String storageKey = 'game_scores';
 
+  // Add this new variable
+  bool isSwing = true; // true for swing, false for putt
+
   @override
   void initState() {
     super.initState();
@@ -123,6 +126,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
             'uid': player.uID,
             'teamId': player.teamID,
             'score': player.getTotalScore(),
+            'shot_type': isSwing ? 'swing' : 'putt', // Add shot type to API request
           },
         );
 
@@ -456,6 +460,85 @@ class _ScoringScreenState extends State<ScoringScreen> {
     );
   }
 
+  // Add this new method
+  Widget _buildModeToggle() {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[850],
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildModeButton(
+                  title: 'Swing',
+                  icon: Icons.golf_course,
+                  isSelected: isSwing,
+                  onTap: () => setState(() => isSwing = true),
+                ),
+                _buildModeButton(
+                  title: 'Putt',
+                  icon: Icons.sports_golf,
+                  isSelected: !isSwing,
+                  onTap: () => setState(() => isSwing = false),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeButton({
+    required String title,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.greenAccent : Colors.transparent,
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? Colors.black : Colors.white70,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                color: isSelected ? Colors.black : Colors.white70,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -531,6 +614,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
       body: Column(
         children: [
           _buildHolesSelector(),
+          _buildModeToggle(), // Add this line
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -727,13 +811,14 @@ class _ScoringScreenState extends State<ScoringScreen> {
   }
 
   Widget _buildScoreInputTabs(int playerIndex) {
+    final List<int> scores = [-1, 0, 1, 2, 3, 4, 5, 6];
     return SizedBox(
       height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 9,
-        itemBuilder: (context, score) {
-          final number = score + 1;
+        itemCount: scores.length,
+        itemBuilder: (context, index) {
+          final number = scores[index];
           final isSelected = players[playerIndex].holes[currentHole] == number;
 
           return GestureDetector(
@@ -747,7 +832,9 @@ class _ScoringScreenState extends State<ScoringScreen> {
               width: 40,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.greenAccent : Colors.grey[800],
+                color: isSelected 
+                    ? (number < 0 ? Colors.redAccent : Colors.greenAccent) 
+                    : Colors.grey[800],
                 borderRadius: BorderRadius.circular(10),
                 border: isSelected
                     ? Border.all(color: Colors.white, width: 2)
@@ -758,8 +845,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                   '$number',
                   style: TextStyle(
                     color: isSelected ? Colors.black : Colors.white70,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),

@@ -23,23 +23,16 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   int selectedHoles = 9; // Default number of holes
   UserClass user = Storage().getUserData();
-  String teamName = '';
-  final List<String> _teamSuggestions = [
-    'Team Alpha',
-    'Team Beta',
-    'The Champions',
-    'Golf Stars',
-    'Putting Masters',
-    'Eagle Squad',
-    'Birdie Gang',
-    'Par Force'
-  ];
+  String _teamName = ''; // Add teamName as state variable
+  List<TextEditingController> playerControllers = [];
+  final TextEditingController _teamNameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     // Add the current user as the first player
     players.add(Player(name: user.name ?? '', imageUrl: user.name ?? ''));
+    playerControllers.add(TextEditingController(text: user.name ?? ''));
   }
 
   Future<void> _playSound(String soundPath) async {
@@ -51,28 +44,98 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
     }
   }
 
+  void updateCompanyName(int index, String value) {
+    setState(() {
+      players[index].companyName = value;
+    });
+  }
+
   Future<void> _createTeam() async {
-    // Demo data for testing
-    Map<String, dynamic> demoResponse = {
-      'error': false,
-      'message': 'Team created successfully!',
-      'teamId': '12345',
-      'teamName': teamName.isEmpty ? 'Demo Team' : teamName,
-      'createdBy': user.userID,
-      'members': players.map((player) => player.name).toList(),
-      'numberOfHoles': selectedHoles,
-      'status': 'active'
-    };
+    // Validate that all players have names
+    if (players.any((player) => player.name.trim().isEmpty)) {
+      AppWidgets.errorSnackBar(content: 'All players must have names');
+      return;
+    }
+
+    _playSound('assets/sounds/mixkit-long-pop-2358.mp3');
+
+    // Print debug info
+    print('Players data:');
+    players.forEach((p) => print('Name: ${p.name}, Company: ${p.companyName}'));
+    
+    // Create lists of player names and company names
+    List<String> playerNames = [];
+    List<String> companyNames = [];
+    
+    for (var player in players) {
+      playerNames.add(player.name.trim());
+      companyNames.add(player.companyName.trim());
+    }
+
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'createTeam',
+        'createdBy': user.userID,
+        'teamName': _teamName.trim(),
+        'members': players.map((player) => '"${player.name}"').toList().toString(),  // Add [] to indicate array
+        'companyNames': players.map((player) => '"${player.companyName}"').toList().toString(),  // Add [] to indicate array
+      },
+    ).then((response) {
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        Storage().storeTeamDate(TeamClass.fromJson(data));
+        AppWidgets.successSnackBar(content: data['message']);
+        Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
+      } else {
+        if (response.statusCode == 500) {
+          print('Server Error Response:');
+          print('Status Code: ${response.statusCode}');
+          print('Response Data: ${response.data}');
+          print('Response Headers: ${response.headers}');
+        }
+        AppWidgets.errorSnackBar(content: data['message'] ?? 'Server error occurred');
+      }
+    }).catchError((e) {
+      print('API Error: $e');
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
 
     // Store demo data
-    Storage().storeTeamDate(TeamClass.fromJson(demoResponse));
-    AppWidgets.successSnackBar(content: demoResponse['message']);
-    Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
+    // Storage().storeTeamDate(TeamClass.fromJson(demoResponse));
+    // AppWidgets.successSnackBar(content: demoResponse['message']);
+    // Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
   }
 
   void _addPlayer() {
     setState(() {
       players.add(Player());
+      playerControllers.add(TextEditingController());
+    });
+  }
+
+  @override
+  void dispose() {
+    _teamNameController.dispose();
+    for (var controller in playerControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  void updateTeamName(String value) {
+    setState(() {
+      _teamName = value;
+    });
+  }
+
+  void updatePlayerName(int index, String value) {
+    setState(() {
+      players[index].name = value;
     });
   }
 
@@ -286,8 +349,10 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                             ? null
                             : () {
                                 setState(() => players.removeAt(index));
+                                playerControllers.removeAt(index);
                               },
                         isCurrentUser: index == 0,
+                        teamNameController: _teamNameController,
                       );
                     },
                   ),
@@ -304,20 +369,23 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
 class Player {
   String name;
   String imageUrl;
+  String companyName;
 
-  Player({this.name = '', this.imageUrl = ''});
+  Player({this.name = '', this.imageUrl = '', this.companyName = ''});
 }
 
 class AnimatedPlayerCard extends StatelessWidget {
   final Player player;
   final VoidCallback? onRemove;
   final bool isCurrentUser;
+  final TextEditingController? teamNameController;
 
   const AnimatedPlayerCard({
     super.key,
     required this.player,
     this.onRemove,
     this.isCurrentUser = false,
+    this.teamNameController,
   });
 
   String _getInitials(String name) {
@@ -395,9 +463,10 @@ class AnimatedPlayerCard extends StatelessWidget {
                       children: [
                         if (isCurrentUser)
                           TextField(
+                            controller: teamNameController,
                             onChanged: (value) => context
                                 .findAncestorStateOfType<_PlayNowScreenState>()
-                                ?.setState(() => teamName = value),
+                                ?.updateTeamName(value),
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               labelText: 'Team Name (optional)',
@@ -414,31 +483,63 @@ class AnimatedPlayerCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                        TextField(
-                          controller: TextEditingController(text: player.name),
-                          enabled: !isCurrentUser,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: isCurrentUser
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: isCurrentUser
-                                ? 'Current Player'
-                                : 'Player Name',
-                            labelStyle: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 14,
-                            ),
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.grey[700]!),
-                            ),
-                            focusedBorder: const UnderlineInputBorder(
-                              borderSide: BorderSide(color: Colors.orange),
-                            ),
-                          ),
-                          onChanged: (value) => player.name = value,
+                        Builder(
+                          builder: (context) {
+                            final state = context
+                                .findAncestorStateOfType<_PlayNowScreenState>();
+                            final index = state?.players.indexOf(player) ?? 0;
+                            return Column(
+                              children: [
+                                TextField(
+                                  controller: state?.playerControllers[index],
+                                  enabled: !isCurrentUser,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: isCurrentUser
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: isCurrentUser
+                                        ? 'Current Player'
+                                        : 'Player Name',
+                                    labelStyle: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 14,
+                                    ),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.grey[700]!),
+                                    ),
+                                    focusedBorder: const UnderlineInputBorder(
+                                      borderSide: BorderSide(color: Colors.orange),
+                                    ),
+                                  ),
+                                  onChanged: (value) =>
+                                      state?.updatePlayerName(index, value),
+                                ),
+                                TextField(
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    labelText: 'Company Name (optional)',
+                                    labelStyle: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontSize: 14,
+                                    ),
+                                    enabledBorder: UnderlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.grey[700]!),
+                                    ),
+                                    focusedBorder: const UnderlineInputBorder(
+                                      borderSide: BorderSide(color: Colors.orange),
+                                    ),
+                                  ),
+                                  onChanged: (value) =>
+                                      state?.updateCompanyName(index, value),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -10,8 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        html,
-        body {
+        html, body {
             height: 100%;
             width: 100%;
             margin: 0;
@@ -54,15 +52,8 @@
         }
 
         @keyframes titlePulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .leaderboard-wrapper {
@@ -109,22 +100,19 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: linear-gradient(45deg,
-                    transparent,
-                    rgba(255, 255, 255, 0.1),
-                    transparent);
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
             transform: rotate(45deg);
             animation: shine 3s infinite;
         }
 
         @keyframes shine {
-            0% {
-                transform: translateX(-100%) rotate(45deg);
-            }
-
-            100% {
-                transform: translateX(100%) rotate(45deg);
-            }
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
         }
 
         .top-three-item .rank {
@@ -137,14 +125,14 @@
         }
 
         .top-three-item .name {
-            font-size: 4rem;
+            font-size: 1.8rem;
             font-weight: 600;
             margin: 15px 0;
             color: #fff;
         }
 
         .top-three-item .score {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             background: linear-gradient(45deg, #4ECDC4, #2ECC71);
             -webkit-background-clip: text;
             background-clip: text;
@@ -174,7 +162,6 @@
             0% {
                 transform: translateY(0);
             }
-
             100% {
                 transform: translateY(-50%);
             }
@@ -254,7 +241,6 @@
             0% {
                 transform: translateY(-10vh) rotate(0deg);
             }
-
             100% {
                 transform: translateY(100vh) rotate(360deg);
             }
@@ -266,8 +252,7 @@
             z-index: 3;
             width: 600px;
             height: 180px;
-            bottom: 120px;
-            /* Position from bottom */
+            bottom: 120px; /* Position from bottom */
             background: url('https://www.animatedimages.org/data/media/359/animated-santa-claus-image-0420.gif') no-repeat;
             background-size: contain;
             animation: flyAcross 15s linear infinite;
@@ -278,52 +263,30 @@
                 left: 150px;
                 transform: translateX(0);
             }
-
             100% {
                 left: -100vw;
                 transform: translateX(0);
             }
         }
-
-        /* Add these styles for the fullscreen button */
-        .fullscreen-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            padding: 10px 20px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .fullscreen-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
     </style>
 </head>
-
 <body>
     <!-- Add this audio element right after body tag -->
     <audio id="jingleSound" loop>
         <source src="https://cdn.pixabay.com/audio/2024/11/18/audio_954cf67490.mp3" type="audio/mpeg">
     </audio>
-
+    
     <div class="snowfall-container" id="snowfall"></div>
     <!-- Add this right after the snowfall container -->
-    <!-- <div class="santa" id="santa"></div> -->
+    <div class="santa" id="santa"></div>
 
-    <!-- Title -->
-    <div class="text-center">
+     <!-- Title -->
+     <div class="text-center">
         <div class="glow-text">MINI GOLF</div>
     </div>
     <!-- Title -->
     <div class="text-center">
-        <div class="glow-text" id="leaderboardTitle">Leaderboard</div>
+        <div class="glow-text">Leaderboard</div>
     </div>
 
     <!-- Leaderboard Wrapper -->
@@ -339,47 +302,13 @@
         </div>
     </div>
 
-   <!-- Footer Section -->
-<div class="fixed bottom-4 w-full bg-black bg-opacity-50 p-2">
-    <div class="flex items-center justify-between px-4">
-        <!-- Logo and Text in the Center -->
-        <div class="flex-1 flex justify-center items-center">
-            <div class="flex flex-col items-center">
-                <img src="https://forcepower.in/img/logo.png" alt="ForcePower Logo" class="h-20 mb-2">
-                <p class="text-white text-lg font-semibold">Powered by ForcePower</p>
-            </div>
+     <!-- Footer Section -->
+     <div class="fixed bottom-4 w-full text-center bg-black bg-opacity-50 p-2">
+        <div class="flex flex-col items-center">
+            <img src="https://forcepower.in/img/logo.png" alt="ForcePower Logo" class="h-12 mb-2">
+            <p class="text-white text-lg font-semibold">Powered by ForcePower</p>
         </div>
-        <!-- Fullscreen Button on the Right -->
-        <button id="fullscreenBtn" class="fullscreen-btn text-white text-lg font-semibold">
-            <span id="fullscreenIcon">⛶</span>
-        </button>
     </div>
-</div>
-
-
-
-
-    <!-- <script>
-        // Countdown Timer Script
-        let timeLeft = 8; // Initial countdown value in seconds
-        const timerDisplay = document.getElementById('countdown-timer');
-
-        function updateTimer() {
-            timerDisplay.textContent = `${timeLeft}s`;
-            if (timeLeft > 0) {
-                timeLeft--;
-            } else {
-                clearInterval(timer); // Stop the timer when it reaches 0
-            }
-        }
-
-        // Update timer every 1 second
-        const timer = setInterval(updateTimer, 1000);
-
-        // Initialize the timer display
-        updateTimer();
-    </script> -->
-
 
     <script>
         // Add these lines at the beginning of the script
@@ -388,7 +317,7 @@
         jingleSound.loop = true;  // Ensure loop is set to true
 
         // Auto-play sound when page loads
-        window.addEventListener('load', function () {
+        window.addEventListener('load', function() {
             playBackgroundMusic();
         });
 
@@ -398,7 +327,7 @@
                 console.log("Audio autoplay failed:", error);
                 // Most browsers require user interaction to play audio
                 // If autoplay fails, we'll keep the original click-to-play behavior
-                document.body.addEventListener('click', function () {
+                document.body.addEventListener('click', function() {
                     playBackgroundMusic();
                 }, { once: true });
             });
@@ -413,146 +342,87 @@
         const topThreeContainer = document.getElementById('top-three');
         const leaderboardItemsContainer = document.getElementById('leaderboard-items');
 
-        let isDayWise = true; // Toggle between dayWise and latestLeaderboard
-
-        // Add this at the beginning of the script section
-        function updateTitle() {
-            const titleElement = document.getElementById('leaderboardTitle');
-            titleElement.textContent = isDayWise ? "Overall Leaderboard" : "Leaderboard";
-        }
-
         async function fetchLeaderboard() {
             try {
-                // Determine which API query to call
-                const queryType = isDayWise ? 'dayWiseLeaderboard' : 'latestLeaderboard';
-
-                // Update the title before fetching
-                updateTitle();
-
-                // Fetch the leaderboard data
-                const response = await fetch('https://app.forcempower.com/minigolf/api/v1/index.php', {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbwy-p8bwLNYWLzfs7UYDP24MTtQN9LWgPg3Gxiv_q3iIGFWfMoO0tja3M2BfoCDS7ASww/exec', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({ q: queryType }),
+                    body: new URLSearchParams({ q: 'dayWiseLeaderboard' }),
+                    // body: new URLSearchParams({ q: 'latestLeaderboard' }),
                 });
 
                 const data = await response.json();
-
-                // Clear previous data before rendering new data
-                topThreeContainer.innerHTML = ''; // Clear Top 3
-                leaderboardItemsContainer.innerHTML = ''; // Clear Remaining Players
-
                 if (data.scores && data.scores.length > 0) {
-                    const sortedScores = data.scores;
+                    const sortedScores = data.scores; // Changed sorting order
 
-                    // Render Top Three Players
+                    // Top Three Players
                     const topThreeHtml = sortedScores.slice(0, 3).map((player, index) => `
-                <div class="top-three-item">
-                    <div class="rank text-5xl">#${index + 1}</div>
-                    <div class="name text-5xl">${player.userName}</div>
-                    <div class="score text-5xl">${player.score ?? ''}</div>
-                </div>
-            `).join('');
+                        <div class="top-three-item">
+                            <div class="rank">#${index + 1}</div>
+                            <div class="name">${player.userName}</div>
+                            <div class="score">${player.score}</div>
+                        </div>
+                    `).join('');
                     topThreeContainer.innerHTML = topThreeHtml;
 
-                    // Render Remaining Players
+                    // Remaining Players with ranks
                     const remainingPlayersHtml = sortedScores.slice(3).map((player, index) => `
-                <div class="player-item">
-                    <span class="player-rank text-7xl">${index + 4}</span>
-                    <span class="player-name text-7xl">${player.userName}</span>
-                    <span class="player-score text-7xl">${player.score ?? ''}</span>
-                </div>
-            `).join('');
+                        <div class="player-item">
+                            <span class="player-rank text-4xl">${index + 4}</span>
+                            <span class="player-name text-5xl">${player.userName}</span>
+                            <span class="player-score text-6xl">${player.score}</span>
+                        </div>
+                    `).join('');
                     leaderboardItemsContainer.innerHTML = remainingPlayersHtml;
-
                 } else {
-                    // Display no data available
                     topThreeContainer.innerHTML = '<p>No data available</p>';
                     leaderboardItemsContainer.innerHTML = '';
                 }
-
-                // Toggle query type for next call
-                isDayWise = !isDayWise;
-
             } catch (error) {
                 console.error('Error fetching leaderboard:', error);
-                topThreeContainer.innerHTML = '<p>Error fetching data</p>';
-                leaderboardItemsContainer.innerHTML = '';
             }
         }
 
-
-        // Fetch leaderboard initially
+        // Fetch leaderboard data initially
         fetchLeaderboard();
 
-        // Fetch leaderboard every 1 minute (60,000 milliseconds)
-        setInterval(fetchLeaderboard, 8000);
-
+        // Refresh leaderboard every 30 seconds
+        setInterval(fetchLeaderboard, 60000);
 
         // Add this snowfall animation script
-        // function createSnowflake() {
-        //     const snowflake = document.createElement('div');
-        //     snowflake.classList.add('snowflake');
-        //     snowflake.innerHTML = '❄';
-        //     snowflake.style.left = Math.random() * 100 + 'vw';
-        //     snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
-        //     snowflake.style.opacity = Math.random();
-        //     snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+            snowflake.innerHTML = '❄';
+            snowflake.style.left = Math.random() * 100 + 'vw';
+            snowflake.style.animationDuration = Math.random() * 3 + 2 + 's';
+            snowflake.style.opacity = Math.random();
+            snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
 
-        //     document.getElementById('snowfall').appendChild(snowflake);
+            document.getElementById('snowfall').appendChild(snowflake);
 
-        //     // Remove snowflake after animation
-        //     setTimeout(() => {
-        //         snowflake.remove();
-        //     }, 5000);
-        // }
-
-        // Create snowflakes at intervals
-        // setInterval(createSnowflake, 100);
-
-        // Update Santa animation function
-        // function createSanta() {
-        //     const santa = document.getElementById('santa');
-        //     // Remove the height changing animation
-        //     santa.addEventListener('animationiteration', () => {
-        //         // Keep santa at the same height
-        //     });
-        // }
-
-        // Initialize Santa
-        // createSanta();
-
-        // Add fullscreen functionality
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const fullscreenIcon = document.getElementById('fullscreenIcon');
-        const fullscreenText = document.getElementById('fullscreenText');
-
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
+            // Remove snowflake after animation
+            setTimeout(() => {
+                snowflake.remove();
+            }, 5000);
         }
 
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) {
-                fullscreenIcon.textContent = '⛶';
-                fullscreenText.textContent = 'Exit Fullscreen';
-            } else {
-                fullscreenIcon.textContent = '⛶';
-                fullscreenText.textContent = 'Fullscreen';
-            }
-        });
+        // Create snowflakes at intervals
+        setInterval(createSnowflake, 100);
+
+        // Update Santa animation function
+        function createSanta() {
+            const santa = document.getElementById('santa');
+            // Remove the height changing animation
+            santa.addEventListener('animationiteration', () => {
+                // Keep santa at the same height
+            });
+        }
+
+        // Initialize Santa
+        createSanta();
     </script>
 </body>
-
 </html>

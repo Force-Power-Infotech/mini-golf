@@ -1,0 +1,2 @@
+C:/Users/rohit/Projects/mini_golf/minigolf/android/app/.cxx/Debug/6h3i3oa3/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/rohit/Projects/mini_golf/minigolf/android/app/.cxx/Debug/6h3i3oa3/arm64-v8a/CMakeFiles/rebuild_cache.dir

@@ -162,7 +162,7 @@ class GetStartedScreen extends StatelessWidget {
                       }
                     },
                     color: Colors.tealAccent,
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius .circular(30),
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
