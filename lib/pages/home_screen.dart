@@ -471,7 +471,8 @@ class _HomescreenState extends State<Homescreen>
   }
 
   void _showTeamNameDialog() {
-    final TextEditingController teamController = TextEditingController();
+    final TextEditingController companyController = TextEditingController();
+    String userId = '';
 
     showDialog(
       context: context,
@@ -500,7 +501,7 @@ class _HomescreenState extends State<Homescreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Enter Team Name',
+                'Enter Company Name',
                 style: TextStyle(
                   color: Colors.purpleAccent,
                   fontWeight: FontWeight.bold,
@@ -509,12 +510,12 @@ class _HomescreenState extends State<Homescreen>
               ),
               const SizedBox(height: 15),
               TextField(
-                controller: teamController,
+                controller: companyController,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.grey[900],
-                  hintText: 'Your team name',
+                  hintText: 'Your company name',
                   hintStyle: TextStyle(color: Colors.grey[400]),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -541,10 +542,8 @@ class _HomescreenState extends State<Homescreen>
                   const SizedBox(width: 10),
                   ElevatedButton(
                     onPressed: () {
-                      if (teamController.text.trim().isNotEmpty) {
-                        // TODO: Implement team name API call here
-                        AppWidgets.successSnackBar(
-                            content: 'Team name updated successfully');
+                      if (companyController.text.trim().isNotEmpty) {
+                        _createCompanyUser(companyController.text.trim());
                         Navigator.pop(context);
                       }
                     },
@@ -573,5 +572,58 @@ class _HomescreenState extends State<Homescreen>
         ),
       ),
     );
+  }
+
+  // Generate random phone number based on timestamp
+  String _generateRandomPhone() {
+    final DateTime now = DateTime.now();
+    final String timestamp = now.millisecondsSinceEpoch.toString();
+    // Take the last 10 digits or pad with zeros if needed
+    final String phone = timestamp.length >= 10
+        ? timestamp.substring(timestamp.length - 10)
+        : timestamp.padLeft(10, '0');
+    return phone;
+  }
+
+  // Create company user with API call
+  void _createCompanyUser(String companyName) async {
+    final String randomPhone = _generateRandomPhone();
+    String userId = '';
+
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'login',
+        'mobileNo': randomPhone,
+        'companyName': companyName,
+      },
+    ).then((response) {
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        userId = data['userID'].toString();
+
+        // Auto submit OTP (simulating the second API call)
+        _submitOtp(userId);
+        AppWidgets.successSnackBar(content: 'Company created successfully');
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    }).catchError((e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
+  }
+
+  // Submit OTP for company user
+  void _submitOtp(String userId) async {
+    // Hardcoded OTP as per your requirement
+    const String staticOtp = "2020";
+
+    // Implementing the OTP verification call here if needed
+    // This part would typically make another API call with the OTP
+    log("User created with ID: $userId and verified with OTP: $staticOtp");
   }
 }

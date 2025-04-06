@@ -26,6 +26,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   String _teamName = ''; // Add teamName as state variable
   List<TextEditingController> playerControllers = [];
   final TextEditingController _teamNameController = TextEditingController();
+  List<String> companySuggestions = []; // List to hold company suggestions
 
   @override
   void initState() {
@@ -33,6 +34,28 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
     // Add the current user as the first player
     players.add(Player(name: user.name ?? '', imageUrl: user.name ?? ''));
     playerControllers.add(TextEditingController(text: user.name ?? ''));
+    // Fetch company suggestions when screen loads
+    _fetchCompanySuggestions();
+  }
+
+  // Method to fetch company suggestions from API
+  Future<void> _fetchCompanySuggestions() async {
+    try {
+      final response = await ApiService().get(
+        '${Api.baseUrl}?q=getUniqueCompanyNames',
+      );
+
+      if (response != null && response.statusCode == 200) {
+        final data = response.data;
+        if (data['error'] == false && data['companies'] != null) {
+          setState(() {
+            companySuggestions = List<String>.from(data['companies']);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching company suggestions: $e');
+    }
   }
 
   Future<void> _playSound(String soundPath) async {
@@ -62,11 +85,11 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
     // Print debug info
     print('Players data:');
     players.forEach((p) => print('Name: ${p.name}, Company: ${p.companyName}'));
-    
+
     // Create lists of player names and company names
     List<String> playerNames = [];
     List<String> companyNames = [];
-    
+
     for (var player in players) {
       playerNames.add(player.name.trim());
       companyNames.add(player.companyName.trim());
@@ -78,8 +101,14 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
         'q': 'createTeam',
         'createdBy': user.userID,
         'teamName': _teamName.trim(),
-        'members': players.map((player) => '"${player.name}"').toList().toString(),  // Add [] to indicate array
-        'companyNames': players.map((player) => '"${player.companyName}"').toList().toString(),  // Add [] to indicate array
+        'members': players
+            .map((player) => '"${player.name}"')
+            .toList()
+            .toString(), // Add [] to indicate array
+        'companyNames': players
+            .map((player) => '"${player.companyName}"')
+            .toList()
+            .toString(), // Add [] to indicate array
       },
     ).then((response) {
       if (response == null) {
@@ -98,7 +127,8 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
           print('Response Data: ${response.data}');
           print('Response Headers: ${response.headers}');
         }
-        AppWidgets.errorSnackBar(content: data['message'] ?? 'Server error occurred');
+        AppWidgets.errorSnackBar(
+            content: data['message'] ?? 'Server error occurred');
       }
     }).catchError((e) {
       print('API Error: $e');
@@ -353,6 +383,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                               },
                         isCurrentUser: index == 0,
                         teamNameController: _teamNameController,
+                        companySuggestions: companySuggestions,
                       );
                     },
                   ),
@@ -379,6 +410,7 @@ class AnimatedPlayerCard extends StatelessWidget {
   final VoidCallback? onRemove;
   final bool isCurrentUser;
   final TextEditingController? teamNameController;
+  final List<String> companySuggestions;
 
   const AnimatedPlayerCard({
     super.key,
@@ -386,6 +418,7 @@ class AnimatedPlayerCard extends StatelessWidget {
     this.onRemove,
     this.isCurrentUser = false,
     this.teamNameController,
+    this.companySuggestions = const [],
   });
 
   String _getInitials(String name) {
@@ -512,30 +545,98 @@ class AnimatedPlayerCard extends StatelessWidget {
                                           BorderSide(color: Colors.grey[700]!),
                                     ),
                                     focusedBorder: const UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.orange),
+                                      borderSide:
+                                          BorderSide(color: Colors.orange),
                                     ),
                                   ),
                                   onChanged: (value) =>
                                       state?.updatePlayerName(index, value),
                                 ),
-                                TextField(
-                                  style: const TextStyle(color: Colors.white),
-                                  decoration: InputDecoration(
-                                    labelText: 'Company Name (optional)',
-                                    labelStyle: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 14,
-                                    ),
-                                    enabledBorder: UnderlineInputBorder(
-                                      borderSide:
-                                          BorderSide(color: Colors.grey[700]!),
-                                    ),
-                                    focusedBorder: const UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.orange),
-                                    ),
-                                  ),
-                                  onChanged: (value) =>
-                                      state?.updateCompanyName(index, value),
+                                // Replace TextField with Autocomplete widget for company name
+                                Autocomplete<String>(
+                                  optionsBuilder:
+                                      (TextEditingValue textEditingValue) {
+                                    if (textEditingValue.text.isEmpty) {
+                                      return const Iterable<String>.empty();
+                                    }
+                                    return companySuggestions.where((option) {
+                                      return option.toLowerCase().contains(
+                                          textEditingValue.text.toLowerCase());
+                                    });
+                                  },
+                                  onSelected: (String selection) {
+                                    state?.updateCompanyName(index, selection);
+                                  },
+                                  initialValue: TextEditingValue(
+                                      text: player.companyName),
+                                  fieldViewBuilder: (context,
+                                      textEditingController,
+                                      focusNode,
+                                      onFieldSubmitted) {
+                                    // Update controller when player changes
+                                    textEditingController.text =
+                                        player.companyName;
+
+                                    return TextField(
+                                      controller: textEditingController,
+                                      focusNode: focusNode,
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                      decoration: InputDecoration(
+                                        labelText: 'Company Name (optional)',
+                                        labelStyle: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 14,
+                                        ),
+                                        enabledBorder: UnderlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: Colors.grey[700]!),
+                                        ),
+                                        focusedBorder:
+                                            const UnderlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.orange),
+                                        ),
+                                      ),
+                                      onChanged: (value) {
+                                        state?.updateCompanyName(index, value);
+                                      },
+                                    );
+                                  },
+                                  optionsViewBuilder:
+                                      (context, onSelected, options) {
+                                    return Align(
+                                      alignment: Alignment.topLeft,
+                                      child: Material(
+                                        elevation: 4.0,
+                                        child: Container(
+                                          width: 300,
+                                          color: const Color(0xFF2E2E2E),
+                                          child: ListView.builder(
+                                            padding: const EdgeInsets.all(8.0),
+                                            itemCount: options.length,
+                                            shrinkWrap: true,
+                                            itemBuilder: (context, index) {
+                                              final option =
+                                                  options.elementAt(index);
+                                              return InkWell(
+                                                onTap: () => onSelected(option),
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      12.0),
+                                                  child: Text(
+                                                    option,
+                                                    style: const TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             );
