@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:minigolf/api.dart';
 import 'package:minigolf/class/create_team.dart';
+import 'package:minigolf/class/slot_details.dart'; // Import the shared SlotDetails class
 import 'package:minigolf/class/user_class.dart';
 import 'package:minigolf/connection/connection.dart';
 import 'package:minigolf/routes/routes.dart';
@@ -20,19 +21,69 @@ class PlayNowScreen extends StatefulWidget {
 
 class _PlayNowScreenState extends State<PlayNowScreen> {
   List<Player> players = [];
+  List<TextEditingController> playerControllers = [];
+  final TextEditingController _teamNameController = TextEditingController();
   final AudioPlayer _audioPlayer = AudioPlayer();
   int selectedHoles = 9; // Default number of holes
   UserClass user = Storage().getUserData();
   String _teamName = ''; // Add teamName as state variable
-  List<TextEditingController> playerControllers = [];
-  final TextEditingController _teamNameController = TextEditingController();
+  SlotDetails? slotDetails;
+  DateTime? selectedDate;
 
   @override
   void initState() {
     super.initState();
-    // Add the current user as the first player
-    players.add(Player(name: user.name ?? '', imageUrl: user.name ?? ''));
-    playerControllers.add(TextEditingController(text: user.name ?? ''));
+    // Get slots data from arguments
+    Map<String, dynamic>? args = Get.arguments;
+    if (args != null) {
+      dynamic slotDetailsArg = args['slotDetails'];
+      selectedDate = args['selectedDate'];
+      if (slotDetailsArg != null) {
+        try {
+          // Create a new slot details object using the from factory
+          slotDetails = SlotDetails.from(slotDetailsArg);
+          
+          // Pre-populate players from slot details if available
+          final slotPlayerNames =
+              slotDetails!.name.split(',').map((e) => e.trim()).toList();
+          players = slotPlayerNames
+              .map((name) => Player(
+                    name: name,
+                    imageUrl: name,
+                    companyName: slotDetails!.companyName,
+                  ))
+              .toList();
+
+          // Add the current user as the first player if not already in the list
+          if (!players.any((p) => p.name == user.name)) {
+            players.insert(
+                0,
+                Player(
+                  name: user.name ?? '',
+                  imageUrl: user.name ?? '',
+                ));
+          }
+
+          // Initialize controllers for each player
+          for (var player in players) {
+            playerControllers.add(TextEditingController(text: player.name));
+          }
+        } catch (e) {
+          print('Error converting SlotDetails: $e');
+          // Fall back to just adding the current user
+          players.add(Player(name: user.name ?? '', imageUrl: user.name ?? ''));
+          playerControllers.add(TextEditingController(text: user.name ?? ''));
+        }
+      } else {
+        // Add the current user as the first player
+        players.add(Player(name: user.name ?? '', imageUrl: user.name ?? ''));
+        playerControllers.add(TextEditingController(text: user.name ?? ''));
+      }
+    } else {
+      // Add the current user as the first player
+      players.add(Player(name: user.name ?? '', imageUrl: user.name ?? ''));
+      playerControllers.add(TextEditingController(text: user.name ?? ''));
+    }
   }
 
   Future<void> _playSound(String soundPath) async {
@@ -57,58 +108,54 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
       return;
     }
 
-    _playSound('assets/sounds/mixkit-long-pop-2358.mp3');
+    try {
+      // Make API call to create team
+      final response = await ApiService().post(
+        Api.baseUrl,
+        data: {
+          'q': 'createTeam',
+          'userID': user.userID,
+          'teamName': _teamNameController.text.trim(),
+          'members': players
+              .map((player) => {
+                    'userName': player.name,
+                    'userID': '',
+                  })
+              .toList(),
+          'slotID': slotDetails?.id,
+          'bookingDate': selectedDate?.toIso8601String(),
+          'timeSlot': slotDetails?.timeSlot,
+        },
+      );
 
-    // Print debug info
-    print('Players data:');
-    players.forEach((p) => print('Name: ${p.name}, Company: ${p.companyName}'));
-    
-    // Create lists of player names and company names
-    List<String> playerNames = [];
-    List<String> companyNames = [];
-    
-    for (var player in players) {
-      playerNames.add(player.name.trim());
-      companyNames.add(player.companyName.trim());
-    }
+      if (response?.statusCode == 200 && response?.data['error'] == false) {
+        // Create TeamClass instance
+        final team = TeamClass.fromJson({
+          'teamId': response?.data['teamId'],
+          'teamName': _teamNameController.text.trim(),
+          'members': players
+              .map((player) => {
+                    'userName': player.name,
+                    'userID': '',
+                  })
+              .toList(),
+        });
 
-    await ApiService().post(
-      Api.baseUrl,
-      data: {
-        'q': 'createTeam',
-        'createdBy': user.userID,
-        'teamName': _teamName.trim(),
-        'members': players.map((player) => '"${player.name}"').toList().toString(),  // Add [] to indicate array
-        'companyNames': players.map((player) => '"${player.companyName}"').toList().toString(),  // Add [] to indicate array
-      },
-    ).then((response) {
-      if (response == null) {
-        AppWidgets.errorSnackBar(content: 'No response from server');
-        return;
-      }
-      Map<String, dynamic> data = response.data;
-      if (response.statusCode == 200 && data['error'] == false) {
-        Storage().storeTeamDate(TeamClass.fromJson(data));
-        AppWidgets.successSnackBar(content: data['message']);
+        // Store team data
+        Storage().storeTeamDate(team);
+
+        // Play success sound
+        await _playSound('assets/sounds/mixkit-long-pop-2358.mp3');
+
+        // Navigate to scoring screen
         Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
       } else {
-        if (response.statusCode == 500) {
-          print('Server Error Response:');
-          print('Status Code: ${response.statusCode}');
-          print('Response Data: ${response.data}');
-          print('Response Headers: ${response.headers}');
-        }
-        AppWidgets.errorSnackBar(content: data['message'] ?? 'Server error occurred');
+        AppWidgets.errorSnackBar(
+            content: response?.data['message'] ?? 'Failed to create team');
       }
-    }).catchError((e) {
-      print('API Error: $e');
-      AppWidgets.errorSnackBar(content: 'Error: $e');
-    });
-
-    // Store demo data
-    // Storage().storeTeamDate(TeamClass.fromJson(demoResponse));
-    // AppWidgets.successSnackBar(content: demoResponse['message']);
-    // Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
+    } catch (e) {
+      AppWidgets.errorSnackBar(content: 'Error creating team: $e');
+    }
   }
 
   void _addPlayer() {
@@ -512,7 +559,8 @@ class AnimatedPlayerCard extends StatelessWidget {
                                           BorderSide(color: Colors.grey[700]!),
                                     ),
                                     focusedBorder: const UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.orange),
+                                      borderSide:
+                                          BorderSide(color: Colors.orange),
                                     ),
                                   ),
                                   onChanged: (value) =>
@@ -531,7 +579,8 @@ class AnimatedPlayerCard extends StatelessWidget {
                                           BorderSide(color: Colors.grey[700]!),
                                     ),
                                     focusedBorder: const UnderlineInputBorder(
-                                      borderSide: BorderSide(color: Colors.orange),
+                                      borderSide:
+                                          BorderSide(color: Colors.orange),
                                     ),
                                   ),
                                   onChanged: (value) =>
