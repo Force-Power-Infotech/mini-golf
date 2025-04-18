@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -26,9 +27,17 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   int selectedHoles = 9; // Default number of holes
   UserClass user = Storage().getUserData();
-  String _teamName = ''; // Add teamName as state variable
   SlotDetails? slotDetails;
-  DateTime? selectedDate;
+  DateTime? selectedDate; // List of company suggestions for dropdown
+  final List<String> companySuggestions = [
+    'Google',
+    'Microsoft',
+    'Apple',
+    'Amazon',
+    'Facebook',
+    'Netflix',
+    'Tesla'
+  ];
 
   @override
   void initState() {
@@ -42,7 +51,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
         try {
           // Create a new slot details object using the from factory
           slotDetails = SlotDetails.from(slotDetailsArg);
-          
+
           // Pre-populate players from slot details if available
           final slotPlayerNames =
               slotDetails!.name.split(',').map((e) => e.trim()).toList();
@@ -108,54 +117,60 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
       return;
     }
 
-    try {
-      // Make API call to create team
-      final response = await ApiService().post(
-        Api.baseUrl,
-        data: {
-          'q': 'createTeam',
-          'userID': user.userID,
-          'teamName': _teamNameController.text.trim(),
-          'members': players
-              .map((player) => {
-                    'userName': player.name,
-                    'userID': '',
-                  })
-              .toList(),
-          'slotID': slotDetails?.id,
-          'bookingDate': selectedDate?.toIso8601String(),
-          'timeSlot': slotDetails?.timeSlot,
-        },
-      );
+    _playSound('assets/sounds/mixkit-long-pop-2358.mp3');
 
-      if (response?.statusCode == 200 && response?.data['error'] == false) {
-        // Create TeamClass instance
-        final team = TeamClass.fromJson({
-          'teamId': response?.data['teamId'],
-          'teamName': _teamNameController.text.trim(),
-          'members': players
-              .map((player) => {
-                    'userName': player.name,
-                    'userID': '',
-                  })
-              .toList(),
-        });
+    // Print debug info
+    print('Players data:');
+    players.forEach((p) => print('Name: ${p.name}, Company: ${p.companyName}'));
 
-        // Store team data
-        Storage().storeTeamDate(team);
+    // Create lists of player names and company names
+    List<String> playerNames = [];
+    List<String> companyNames = [];
 
-        // Play success sound
-        await _playSound('assets/sounds/mixkit-long-pop-2358.mp3');
+    for (var player in players) {
+      playerNames.add(player.name.trim());
+      companyNames.add(player.companyName.trim());
+    }
 
-        // Navigate to scoring screen
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'createTeam',
+        'createdBy': user.userID,
+        //  'teamName': _teamName.trim(),
+        'members': players
+            .map((player) => '"${player.name}"')
+            .toList()
+            .toString(), // Add [] to indicate array
+        'companyNames': players
+            .map((player) => '"${player.companyName}"')
+            .toList()
+            .toString(), // Add [] to indicate array
+      },
+    ).then((response) {
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        Storage().storeTeamDate(TeamClass.fromJson(data));
+        AppWidgets.successSnackBar(content: data['message']);
         Get.toNamed(Routes.scoreboard, arguments: {'holes': selectedHoles});
       } else {
+        if (response.statusCode == 500) {
+          print('Server Error Response:');
+          print('Status Code: ${response.statusCode}');
+          print('Response Data: ${response.data}');
+          print('Response Headers: ${response.headers}');
+        }
         AppWidgets.errorSnackBar(
-            content: response?.data['message'] ?? 'Failed to create team');
+            content: data['message'] ?? 'Server error occurred');
       }
-    } catch (e) {
-      AppWidgets.errorSnackBar(content: 'Error creating team: $e');
-    }
+    }).catchError((e) {
+      print('API Error: $e');
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
   }
 
   void _addPlayer() {
@@ -175,9 +190,10 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
   }
 
   void updateTeamName(String value) {
-    setState(() {
-      _teamName = value;
-    });
+    // Just update the team name controller value instead
+    if (_teamNameController.text != value) {
+      _teamNameController.text = value;
+    }
   }
 
   void updatePlayerName(int index, String value) {
@@ -400,6 +416,7 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                               },
                         isCurrentUser: index == 0,
                         teamNameController: _teamNameController,
+                        companySuggestions: companySuggestions,
                       );
                     },
                   ),
@@ -426,6 +443,7 @@ class AnimatedPlayerCard extends StatelessWidget {
   final VoidCallback? onRemove;
   final bool isCurrentUser;
   final TextEditingController? teamNameController;
+  final List<String> companySuggestions;
 
   const AnimatedPlayerCard({
     super.key,
@@ -433,6 +451,7 @@ class AnimatedPlayerCard extends StatelessWidget {
     this.onRemove,
     this.isCurrentUser = false,
     this.teamNameController,
+    this.companySuggestions = const [],
   });
 
   String _getInitials(String name) {

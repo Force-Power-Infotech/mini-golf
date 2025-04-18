@@ -34,7 +34,10 @@ class _ScoringScreenState extends State<ScoringScreen> {
   @override
   void initState() {
     super.initState();
-    // _scrollController = ScrollController();
+
+    // Clear stored scores at the beginning of the screen
+    Storage().remove(storageKey);
+
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 3));
 
@@ -126,7 +129,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
             'uid': player.uID,
             'teamId': player.teamID,
             'score': player.getTotalScore(),
-            'shot_type': isSwing ? 'swing' : 'putt', // Add shot type to API request
+            'shot_type':
+                isSwing ? 'swing' : 'putt', // Add shot type to API request
           },
         );
 
@@ -136,9 +140,64 @@ class _ScoringScreenState extends State<ScoringScreen> {
       }
 
       setState(() => hasUnsavedChanges = false);
-      AppWidgets.successSnackBar(content: 'Scores saved successfully');
+
+      // Show subtle snackbar from bottom
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.greenAccent, size: 20),
+              SizedBox(width: 10),
+              Text('Scores saved successfully',
+                  style: TextStyle(color: Colors.white, fontSize: 14)),
+            ],
+          ),
+          backgroundColor: Colors.black87,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+                color: Colors.greenAccent.withOpacity(0.5), width: 1),
+          ),
+          margin: EdgeInsets.only(
+            bottom: 20,
+            left: 20,
+            right: 20,
+          ),
+          duration: Duration(seconds: 2),
+          dismissDirection: DismissDirection.horizontal,
+        ),
+      );
     } catch (e) {
-      AppWidgets.errorSnackBar(content: 'Error saving scores: $e');
+      // Show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text('Error saving scores: $e',
+                    style: TextStyle(color: Colors.white, fontSize: 14)),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.black87,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side:
+                BorderSide(color: Colors.redAccent.withOpacity(0.5), width: 1),
+          ),
+          margin: EdgeInsets.only(
+            bottom: 20,
+            left: 20,
+            right: 20,
+          ),
+          duration: Duration(seconds: 3),
+          dismissDirection: DismissDirection.horizontal,
+        ),
+      );
     }
   }
 
@@ -832,8 +891,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
               width: 40,
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: isSelected 
-                    ? (number < 0 ? Colors.redAccent : Colors.greenAccent) 
+                color: isSelected
+                    ? (number < 0 ? Colors.redAccent : Colors.greenAccent)
                     : Colors.grey[800],
                 borderRadius: BorderRadius.circular(10),
                 border: isSelected
@@ -845,7 +904,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
                   '$number',
                   style: TextStyle(
                     color: isSelected ? Colors.black : Colors.white70,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),

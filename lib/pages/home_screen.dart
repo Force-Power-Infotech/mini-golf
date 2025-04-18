@@ -775,4 +775,57 @@ class _HomescreenState extends State<Homescreen>
     _controller.dispose();
     super.dispose();
   }
+
+  // Generate random phone number based on timestamp
+  String _generateRandomPhone() {
+    final DateTime now = DateTime.now();
+    final String timestamp = now.millisecondsSinceEpoch.toString();
+    // Take the last 10 digits or pad with zeros if needed
+    final String phone = timestamp.length >= 10
+        ? timestamp.substring(timestamp.length - 10)
+        : timestamp.padLeft(10, '0');
+    return phone;
+  }
+
+  // Create company user with API call
+  void _createCompanyUser(String companyName) async {
+    final String randomPhone = _generateRandomPhone();
+    String userId = '';
+
+    await ApiService().post(
+      Api.baseUrl,
+      data: {
+        'q': 'login',
+        'mobileNo': randomPhone,
+        'companyName': companyName,
+      },
+    ).then((response) {
+      if (response == null) {
+        AppWidgets.errorSnackBar(content: 'No response from server');
+        return;
+      }
+      Map<String, dynamic> data = response.data;
+      if (response.statusCode == 200 && data['error'] == false) {
+        userId = data['userID'].toString();
+
+        // Auto submit OTP (simulating the second API call)
+        _submitOtp(userId);
+        AppWidgets.successSnackBar(content: 'Company created successfully');
+      } else {
+        AppWidgets.errorSnackBar(content: data['message']);
+      }
+    }).catchError((e) {
+      AppWidgets.errorSnackBar(content: 'Error: $e');
+    });
+  }
+
+  // Submit OTP for company user
+  void _submitOtp(String userId) async {
+    // Hardcoded OTP as per your requirement
+    const String staticOtp = "2020";
+
+    // Implementing the OTP verification call here if needed
+    // This part would typically make another API call with the OTP
+    log("User created with ID: $userId and verified with OTP: $staticOtp");
+  }
 }
