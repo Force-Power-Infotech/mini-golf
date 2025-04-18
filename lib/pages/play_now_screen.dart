@@ -41,12 +41,12 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
 
   @override
   void initState() {
-    super.initState();
-    // Get slots data from arguments
+    super.initState(); // Get slots data from arguments
     Map<String, dynamic>? args = Get.arguments;
     if (args != null) {
       dynamic slotDetailsArg = args['slotDetails'];
       selectedDate = args['selectedDate'];
+      String companyName = args['companyName'] ?? '';
       if (slotDetailsArg != null) {
         try {
           // Create a new slot details object using the from factory
@@ -61,15 +61,15 @@ class _PlayNowScreenState extends State<PlayNowScreen> {
                     imageUrl: name,
                     companyName: slotDetails!.companyName,
                   ))
-              .toList();
-
-          // Add the current user as the first player if not already in the list
+              .toList(); // Add the current user as the first player if not already in the list
           if (!players.any((p) => p.name == user.name)) {
             players.insert(
                 0,
                 Player(
                   name: user.name ?? '',
                   imageUrl: user.name ?? '',
+                  companyName:
+                      companyName, // Use the company name passed from home screen
                 ));
           }
 

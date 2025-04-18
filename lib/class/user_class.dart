@@ -7,7 +7,7 @@ class UserClass {
   String? name;
   String? lastLogin;
   String? active;
-
+  String? companyName;
   UserClass(
       {this.error,
       this.message,
@@ -16,8 +16,8 @@ class UserClass {
       this.otp,
       this.name,
       this.lastLogin,
-      this.active});
-
+      this.active,
+      this.companyName});
   UserClass.fromJson(Map<String, dynamic> json) {
     error = json['error'].toString();
     message = json['message'].toString();
@@ -27,8 +27,8 @@ class UserClass {
     name = json['name'].toString();
     lastLogin = json['lastLogin'].toString();
     active = json['active'].toString();
+    companyName = json['companyName']?.toString();
   }
-
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['error'] = error;
@@ -39,6 +39,7 @@ class UserClass {
     data['name'] = name;
     data['lastLogin'] = lastLogin;
     data['active'] = active;
+    data['companyName'] = companyName;
     return data;
   }
 }

@@ -216,6 +216,8 @@ class _HomescreenState extends State<Homescreen>
                                           arguments: {
                                             'slotDetails': slot,
                                             'selectedDate': DateTime.now(),
+                                            'companyName':
+                                                user.companyName ?? '',
                                           },
                                         );
                                       },
