@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       initialRoute: Routes.getStarted,
       onGenerateRoute: RouteGenerator.generateRoute,
-      title: 'MINI GOLF',
+      title: 'GO PUTT',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
@@ -43,5 +43,3 @@ class MyApp extends StatelessWidget {
 }
 
 // Example HomeScreen widget to display boardId
-
-

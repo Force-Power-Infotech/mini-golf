@@ -521,7 +521,7 @@ class _HomescreenState extends State<Homescreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Mini Golf Pro",
+                "Go Putt Pro",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 28,
