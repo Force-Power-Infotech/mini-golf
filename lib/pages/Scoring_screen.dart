@@ -118,9 +118,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
               })
           .toList();
 
-      await Storage().write(storageKey, scoresData);
-
-      // Send to API
+      await Storage().write(storageKey, scoresData); // Send to API
       for (var player in players) {
         final response = await ApiService().post(
           Api.baseUrl,
@@ -129,6 +127,8 @@ class _ScoringScreenState extends State<ScoringScreen> {
             'uid': player.uID,
             'teamId': player.teamID,
             'score': player.getTotalScore(),
+            'lastEnd': currentHole +
+                1, // Adding lastEnd parameter (1-based hole number)
             'shot_type':
                 isSwing ? 'swing' : 'putt', // Add shot type to API request
           },
