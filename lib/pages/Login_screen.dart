@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isOtpSent = false;
   int _timeLeft = 0;
   Timer? _timer;
-  String _displayPhone = '';  // Add this line near other state variables
+  String _displayPhone = ''; // Add this line near other state variables
 
   @override
   void dispose() {
@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isOtpSent = true;
           userId = data['userID'].toString();
-          _displayPhone = _phoneController.text;  // Store the phone number
+          _displayPhone = _phoneController.text; // Store the phone number
         });
         startTimer(); // Start the timer when OTP is sent
       } else {
@@ -109,7 +109,8 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _isOtpSent = true;
         });
-        Get.toNamed(Routes.home);
+        // Go directly to PlayNowScreen instead of Home
+        Get.offAllNamed(Routes.playnow);
         // Use store data from storage below
         // Assuming you have a method to store data in local storage
       } else {
@@ -194,11 +195,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: _timeLeft == 0 ? _sendOtp : null,
                       child: Text(
-                        _timeLeft > 0 
+                        _timeLeft > 0
                             ? 'Resend OTP in ${_timeLeft}s'
                             : 'Resend OTP',
                         style: TextStyle(
-                          color: _timeLeft == 0 ? Colors.tealAccent : Colors.grey,
+                          color:
+                              _timeLeft == 0 ? Colors.tealAccent : Colors.grey,
                         ),
                       ),
                     ),
@@ -243,7 +245,7 @@ class _LoginScreenState extends State<LoginScreen> {
               if (_isOtpSent)
                 Center(
                   child: Text(
-                    'Enter the OTP sent to ${_displayPhone}',  // Updated text
+                    'Enter the OTP sent to ${_displayPhone}', // Updated text
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 14,
