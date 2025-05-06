@@ -25,8 +25,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
   // Add these new variables
   bool hasUnsavedChanges = false;
   final String storageKey = 'game_scores';
-  List<Map<String, dynamic>> scoreHistory =
-      []; // To track score changes for undo
+  List<Map<String, dynamic>> scoreHistory = []; // To track score changes for undo
 
   @override
   void initState() {
@@ -104,13 +103,11 @@ class _ScoringScreenState extends State<ScoringScreen> {
   Future<void> _saveScores() async {
     try {
       // Save to local storage using new write method
-      List<Map<String, dynamic>> scoresData = players
-          .map((player) => {
-                'uid': player.uID,
-                'holes': player.holes,
-              })
-          .toList();
-
+      List<Map<String, dynamic>> scoresData = players.map((player) => {
+        'uid': player.uID,
+        'holes': player.holes,
+      }).toList();
+      
       await Storage().write(storageKey, scoresData);
 
       // Send to API
@@ -144,20 +141,17 @@ class _ScoringScreenState extends State<ScoringScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[850],
-        title:
-            const Text('Save Scores?', style: TextStyle(color: Colors.white)),
+        title: const Text('Save Scores?', style: TextStyle(color: Colors.white)),
         content: const Text('Would you like to save the current scores?',
             style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child:
-                const Text('Don\'t Save', style: TextStyle(color: Colors.red)),
+            child: const Text('Don\'t Save', style: TextStyle(color: Colors.red)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style:
-                ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent),
             child: const Text('Save', style: TextStyle(color: Colors.black)),
           ),
         ],
@@ -181,64 +175,64 @@ class _ScoringScreenState extends State<ScoringScreen> {
     _confettiController.dispose();
     super.dispose();
   }
-
+  
   // Save current state of scores for undo functionality
   void _saveScoreHistoryEntry() {
     List<List<int>> currentScores = [];
     for (var player in players) {
       currentScores.add(List.from(player.holes));
     }
-
+    
     scoreHistory.add({
       'totalHoles': totalHoles,
       'scores': currentScores,
       'currentHole': currentHole,
     });
   }
-
+  
   // Method to increase the number of holes
   void _increaseHoles() {
     // Save current scores before adding new holes
     _saveScoreHistoryEntry();
-
+    
     setState(() {
       totalHoles++;
-
+      
       // Add a new hole with default score 0 for each player
       for (var player in players) {
         player.holes.add(0);
       }
-
+      
       hasUnsavedChanges = true;
     });
-
+    
     // Show confirmation
     AppWidgets.successSnackBar(content: 'Added hole #$totalHoles');
-
+    
     // Automatically scroll to the new hole
     Future.delayed(const Duration(milliseconds: 300), () {
       _handleHoleChange(totalHoles - 1);
     });
   }
-
+  
   // Method to undo the last score change
   void _undoLastScore() {
     if (scoreHistory.isEmpty) {
       AppWidgets.infoSnackBar(content: 'Nothing to undo');
       return;
     }
-
+    
     setState(() {
       // Get the last saved state
       final lastState = scoreHistory.removeLast();
       totalHoles = lastState['totalHoles'];
-
+      
       // Restore player scores
       List<List<int>> savedScores = lastState['scores'];
       for (int i = 0; i < players.length && i < savedScores.length; i++) {
         players[i].holes = List.from(savedScores[i]);
       }
-
+      
       // Restore current hole if available
       if (lastState.containsKey('currentHole')) {
         currentHole = lastState['currentHole'];
@@ -246,15 +240,15 @@ class _ScoringScreenState extends State<ScoringScreen> {
         // Otherwise adjust current hole if needed
         currentHole = totalHoles - 1;
       }
-
+      
       hasUnsavedChanges = true;
     });
-
+    
     // Update scores on server
     for (int i = 0; i < players.length; i++) {
       _updateServerScore(i);
     }
-
+    
     AppWidgets.successSnackBar(content: 'Previous action undone');
   }
 
@@ -342,8 +336,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
 
   void _showResultsDialog() {
     // Determine the winner
-    Player winner =
-        players.reduce((a, b) => a.getTotalScore() < b.getTotalScore() ? a : b);
+    Player winner = players.reduce((a, b) => a.getTotalScore() < b.getTotalScore() ? a : b);
 
     // Start the confetti animation
     _confettiController.play();
@@ -410,11 +403,9 @@ class _ScoringScreenState extends State<ScoringScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: players
                           .map((player) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 6.0),
+                                padding: const EdgeInsets.symmetric(vertical: 6.0),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       player.name,
@@ -483,42 +474,6 @@ class _ScoringScreenState extends State<ScoringScreen> {
     );
   }
 
-  // Check if all players have entered scores for the current hole
-  bool _allPlayersHaveScores() {
-    for (var player in players) {
-      // A score of 0 indicates the player hasn't entered a score yet
-      if (player.holes[currentHole] == 0) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  // Method to automatically move to next hole when all players have scored
-  void _checkAndMoveToNextHole() {
-    if (_allPlayersHaveScores() && currentHole < totalHoles - 1) {
-      // Show current hole completion message
-      AppWidgets.successSnackBar(
-        content: 'All scores entered for hole #${currentHole + 1}!',
-        duration: const Duration(seconds: 1),
-      );
-
-      // Delay moving to the next hole to give visual feedback
-      Future.delayed(const Duration(milliseconds: 1200), () {
-        // Check again in case something changed during the delay
-        if (_allPlayersHaveScores() && mounted) {
-          int nextHole = currentHole + 1;
-          _handleHoleChange(nextHole);
-
-          // Show a snackbar indicating movement to the next hole
-          AppWidgets.successSnackBar(
-            content: 'Moving to hole #${nextHole + 1}',
-            duration: const Duration(seconds: 2),
-          );
-        }
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -532,15 +487,14 @@ class _ScoringScreenState extends State<ScoringScreen> {
         ),
         centerTitle: true,
         actions: [
-          TextButton.icon(
+            TextButton.icon(
             onPressed: hasUnsavedChanges ? _saveScores : null,
             icon: const Icon(Icons.save, color: Colors.greenAccent),
-            label:
-                const Text('Save', style: TextStyle(color: Colors.greenAccent)),
+            label: const Text('Save', style: TextStyle(color: Colors.greenAccent)),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
-          ),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Row(
@@ -611,6 +565,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
           ),
         ],
       ),
+
       backgroundColor: const Color(0xFF1A1A1A),
       body: Column(
         children: [
@@ -648,9 +603,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                               backgroundColor: Colors
                                   .primaries[index % Colors.primaries.length],
                               child: Text(
-                                players[index].name.isNotEmpty
-                                    ? players[index].name[0]
-                                    : '?',
+                                players[index].name.isNotEmpty ? players[index].name[0] : '?',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -798,19 +751,16 @@ class _ScoringScreenState extends State<ScoringScreen> {
         itemBuilder: (context, score) {
           final number = score + 1;
           final isSelected = players[playerIndex].holes[currentHole] == number;
-
+          
           return GestureDetector(
             onTap: () {
               // Save current score before changing
               _saveScoreHistoryEntry();
-
+              
               setState(() {
                 players[playerIndex].holes[currentHole] = number;
                 hasUnsavedChanges = true;
               });
-
-              // Check and move to next hole if applicable
-              _checkAndMoveToNextHole();
             },
             child: Container(
               width: 40,
@@ -827,8 +777,7 @@ class _ScoringScreenState extends State<ScoringScreen> {
                   '$number',
                   style: TextStyle(
                     color: isSelected ? Colors.black : Colors.white70,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),

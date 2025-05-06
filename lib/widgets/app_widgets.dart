@@ -60,7 +60,7 @@ class AppWidgets {
 
   static successSnackBar({
     required String content,
-    Color textColor = Colors.black,
+    Color textColor = Colors.white,
     Duration duration = const Duration(seconds: 3),
   }) {
     if (Get.isSnackbarOpen) {
@@ -76,7 +76,7 @@ class AppWidgets {
       colorText: textColor,
       duration: duration,
       icon: const Icon(
-        CupertinoIcons.check_mark_circled_solid,
+        Icons.check_circle,
         color: Colors.white,
         size: 26,
       ),
@@ -149,6 +149,55 @@ class AppWidgets {
       boxShadows: [
         BoxShadow(
           color: Colors.redAccent.withOpacity(0.3),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    );
+  }
+
+  static infoSnackBar({
+    required String content,
+    Color textColor = Colors.white,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    if (Get.isSnackbarOpen) {
+      Get.closeAllSnackbars();
+    }
+    return Get.snackbar(
+      'Information',
+      content,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.blue.withOpacity(0.9),
+      borderRadius: 20,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      colorText: textColor,
+      duration: duration,
+      icon: const Icon(
+        Icons.info_outline,
+        color: Colors.white,
+        size: 26,
+      ),
+      padding: const EdgeInsets.all(16),
+      titleText: const Text(
+        'Information',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      messageText: Text(
+        content,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      boxShadows: [
+        BoxShadow(
+          color: Colors.blueAccent.withOpacity(0.3),
           blurRadius: 10,
           offset: const Offset(0, 4),
         ),
