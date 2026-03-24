@@ -60,81 +60,317 @@ flutter run -d chrome
 
 ## API and Backend
 
-This section explains the backend integration clearly in terms of what, where, who, and how.
+This section documents the backend integration in terms of **what** the backend does, **where** things live (URLs and files), **who** is responsible, and **how** the calls are made.
 
-### What
+### What (backend responsibilities)
 
-The app talks to remote backend services for:
+The Flutter app talks to remote backend services for:
 
 - Login and OTP verification
-- Team creation
-- Score submission
-- Leaderboard retrieval
+- Team creation and management
+- Score submission and updates
+- Day-wise and group-wise leaderboard retrieval
 - Slot reservation lookup
-- Username updates
+- Profile / username updates
 
-### Where
+### Where (URLs and code locations)
 
-Backend calls are split across these base endpoints:
+**Backend URLs**
 
-1. Main app API (`q` action pattern):
-	 - `https://app.forcempower.com/minigolf/api/v1/index.php`
+1. Main app API (action routed via `q` field):
+	- `https://app.forcempower.com/minigolf/api/v1/index.php`
 2. Booking endpoints (separate PHP routes):
-	 - `https://app.forcempower.com/booking/api/fetch_reservations.php`
-	 - `https://app.forcempower.com/booking/api/modify_username.php`
+	- `https://app.forcempower.com/booking/api/fetch_reservations.php`
+	- `https://app.forcempower.com/booking/api/modify_username.php`
 3. Leaderboard display pages (HTML pages) call a Google Apps Script endpoint:
-	 - `https://script.google.com/macros/s/AKfycbwy-p8bwLNYWLzfs7UYDP24MTtQN9LWgPg3Gxiv_q3iIGFWfMoO0tja3M2BfoCDS7ASww/exec`
+	- `https://script.google.com/macros/s/AKfycbwy-p8bwLNYWLzfs7UYDP24MTtQN9LWgPg3Gxiv_q3iIGFWfMoO0tja3M2BfoCDS7ASww/exec`
 
-### Who
+**Client-side code locations**
 
-- Client (this repo): Flutter UI, local storage, request orchestration.
-- Backend (external, not in this repo): PHP/API services hosted under `app.forcempower.com` and Google Apps Script endpoint for display leaderboards.
+- `lib/api.dart` – defines `Api.baseUrl` (main app API URL).
+- `lib/connection/connection.dart` – `ApiService` wrapper over Dio (`get` / `post` helpers, timeouts, loader handling).
+- `lib/connection/interceptor.dart` – `LoggingInterceptors` used for structured request/response/error logging.
+- `lib/pages/` – individual screens that build request bodies and call `ApiService`.
+- `lib/pages/leaderboard.html`, `lib/pages/finalleaderboard.html` – HTML leaderboard pages that post to the backend/Apps Script.
 
-Important: there is no server-side backend source code in this repository.
+### Who (responsibility split)
 
-### How
+- **Client (this repo)**: Flutter UI, navigation, validation, local storage (user/team/board state), and orchestration of HTTP requests via `ApiService`.
+- **Backend (external, not in this repo)**: PHP/API services hosted under `app.forcempower.com` plus a Google Apps Script endpoint that powers the public leaderboard displays.
 
-- API wrapper: `ApiService` in `lib/connection/connection.dart`
-- Request method: mostly `POST` with `FormData`
-- Main action routing: send `q` field in body to indicate backend action
-- Timeout: 90 seconds connect/receive
-- Response handling pattern: screens check `statusCode == 200` and `data['error'] == false`
+There is **no server-side backend source code** in this repository; only the Flutter/web client and static HTML leaderboard pages.
 
-## API Action Map (From Client Code)
+### How (request / response flow)
 
-Main API (`Api.baseUrl`):
+- **HTTP client**: Dio, configured in `ApiService` with 90s connect/receive timeouts and interceptors.
+- **Action routing**: most requests send a `q` field in the body to tell the PHP backend which action to execute (e.g. `q=login`, `q=scoring`).
+- **Data format**: `POST` requests send data as `FormData.fromMap`; some `GET` requests use query parameters.
+- **Loading UX**: `ApiService` shows a loader via `AppWidgets.showLoader()` before sending a request and hides it when the response or error is received.
+- **Logging**: `LoggingInterceptors` (and the inline interceptor in `ApiService`) log URI, method, headers, body, status code, and error details for easier debugging.
+- **Response pattern**: screens typically expect HTTP status `200` and a JSON payload where `error == false` indicates success, then map fields into local models or storage.
+
+### Endpoint overview (from client code)
+
+**Main API (Api.baseUrl)**
 
 - `q=login`
-	- Used in `LoginScreen` and company-user creation flow in `HomeScreen`
-	- Params seen: `mobileNo`, optional `companyName`
+	- Used in login and company-user creation flows.
+	- Example params: `mobileNo`, optional `companyName`.
 - `q=verifyOTP`
-	- OTP verification in `LoginScreen`
-	- Params: `userID`, `otp`
+	- OTP verification after login.
+	- Example params: `userID`, `otp`.
 - `q=createTeam`
-	- Team creation in `PlayNowScreen`
-	- Params: `createdBy`, `members`, `companyNames`
+	- Team creation when starting a new game.
+	- Example params: `createdBy`, `members`, `companyNames`.
 - `q=scoring`
-	- Score save in `ScoringScreen`
-	- Params: `uid`, `teamId`, `score`, `lastEnd`, `shot_type`
+	- Save scores for a team and hole.
+	- Example params: `uid`, `teamId`, `score`, `lastEnd`, `shot_type`.
 - `q=dayWiseLeaderboard`
-	- Day leaderboard in `LeaderBoardScreen`
+	- Fetch day-wise leaderboard data.
 - `q=leaderboard`
-	- Team-wise leaderboard in `GroupWiseLeaderboard`
-	- Params: `teamId`
+	- Fetch group/team-wise leaderboard data.
+	- Example params: `teamId`.
 
-Non-`Api.baseUrl` endpoints used directly:
+**Non-Api.baseUrl endpoints used directly**
 
-- `POST /booking/api/fetch_reservations.php`
-	- Called in `HomeScreen` for slot availability
-	- Params: `date`, `timeSlot`
-- `POST /booking/api/modify_username.php`
-	- Called in `HomeScreen` for profile name update
-	- Params: `userID`, `username`
+- `POST https://app.forcempower.com/booking/api/fetch_reservations.php`
+	- Used for slot availability lookup.
+	- Example params: `date`, `timeSlot`.
+- `POST https://app.forcempower.com/booking/api/modify_username.php`
+	- Used for profile/username updates.
+	- Example params: `userID`, `username`.
 
-HTML leaderboard pages in `lib/pages/`:
+**HTML leaderboard pages (lib/pages/)**
 
-- `leaderboard.html` posts `q=dayWiseLeaderboard`
-- `finalleaderboard.html` posts `q=latestLeaderboard`
+- `leaderboard.html` – posts `q=dayWiseLeaderboard` and renders a day-wise leaderboard display.
+- `finalleaderboard.html` – posts `q=latestLeaderboard` and renders the final/overall leaderboard.
+
+## API Reference
+
+This section documents the client-side view of each API the app calls. Field names and shapes are taken from the Flutter code; the real backend may include additional fields.
+
+### Auth: Login (q=login)
+
+- **URL**: `POST https://app.forcempower.com/minigolf/api/v1/index.php`
+- **Used in**: Login flow, company user creation.
+- **Request body (FormData)**
+
+	```json
+	{
+		"q": "login",
+		"mobileNo": "<string>",       // user mobile or generated phone
+		"companyName": "<string>"    // optional, used when creating company users
+	}
+	```
+
+- **Success response (as used by client)**
+
+	```json
+	{
+		"error": false,
+		"message": "<string>",
+		"userID": "<string>",
+		"mobileNo": "<string>",
+		"otp": "<string>",
+		"name": "<string>",
+		"lastLogin": "<string>",
+		"active": "<string>",
+		"companyName": "<string|null>"
+	}
+	```
+
+### Auth: Verify OTP (q=verifyOTP)
+
+- **URL**: `POST https://app.forcempower.com/minigolf/api/v1/index.php`
+- **Used in**: OTP verification after login.
+- **Request body (FormData)**
+
+	```json
+	{
+		"q": "verifyOTP",
+		"userID": "<string>",
+		"otp": "<string>"      // in client flow, often "2020"
+	}
+	```
+
+- **Success response (as used by client)**
+
+	Same structure as login (mapped into `UserClass`), e.g.:
+
+	```json
+	{
+		"error": false,
+		"message": "<string>",
+		"userID": "<string>",
+		"mobileNo": "<string>",
+		"otp": "<string>",
+		"name": "<string>",
+		"lastLogin": "<string>",
+		"active": "<string>",
+		"companyName": "<string|null>"
+	}
+	```
+
+### Teams: Create Team (q=createTeam)
+
+- **URL**: `POST https://app.forcempower.com/minigolf/api/v1/index.php`
+- **Used in**: Play Now / create team flow.
+- **Request body (FormData)**
+
+	```json
+	{
+		"q": "createTeam",
+		"createdBy": "<string>",          // userID of creator
+		"members": "[\"Player 1\", \"Player 2\"]",       // JSON-like string
+		"companyNames": "[\"Company A\", \"Company B\"]" // JSON-like string
+	}
+	```
+
+- **Success response (as used by client)**
+
+	```json
+	{
+		"error": false,
+		"message": "<string>",
+		"teamId": "<string>",
+		"createdBy": "<string>",
+		"members": [
+			{ "userID": "<string>", "userName": "<string>" }
+		],
+		"createDateTime": "<string>"
+	}
+	```
+
+### Scoring: Save Scores (q=scoring)
+
+- **URL**: `POST https://app.forcempower.com/minigolf/api/v1/index.php`
+- **Used in**: Scoring screen when saving scores per player.
+- **Request body (per player, FormData)**
+
+	```json
+	{
+		"q": "scoring",
+		"uid": "<string>",         // player userID
+		"teamId": "<string>",
+		"score": <number>,          // total score
+		"lastEnd": <number>,        // last completed hole (1-based)
+		"shot_type": "swing" | "putt"
+	}
+	```
+
+- **Success response (as used by client)**
+
+- Client only checks for HTTP `200`; any body with `error == false` is treated as success (exact fields are not strongly typed in code).
+
+### Leaderboards: Day-wise (q=dayWiseLeaderboard)
+
+- **URL**: `POST https://app.forcempower.com/minigolf/api/v1/index.php`
+- **Used in**: Day-wise leaderboard Flutter screen and HTML leaderboard page.
+- **Request body (FormData)**
+
+	```json
+	{
+		"q": "dayWiseLeaderboard"
+	}
+	```
+
+- **Success response (as used by client)**
+
+	```json
+	{
+		"error": false,
+		"message": "<string>",
+		"scores": [
+			{ /* mapped into LeaderboardModel.fromJson(...) */ }
+		]
+	}
+	```
+
+### Leaderboards: Group / Team-wise (q=leaderboard)
+
+- **URL**: `POST https://app.forcempower.com/minigolf/api/v1/index.php`
+- **Used in**: Group-wise leaderboard Flutter screen.
+- **Request body (FormData)**
+
+	```json
+	{
+		"q": "leaderboard",
+		"teamId": "<string>"
+	}
+	```
+
+- **Success response (as used by client)**
+
+	```json
+	{
+		"error": false,
+		"message": "<string>",
+		"scores": [
+			{ /* mapped into LeaderboardModel.fromJson(...) */ }
+		]
+	}
+	```
+
+### Leaderboards: Final (q=latestLeaderboard)
+
+- **URL**: Google Apps Script endpoint (from HTML pages).
+- **Used in**: `finalleaderboard.html` static page.
+- **Request body**
+
+	```json
+	{
+		"q": "latestLeaderboard"
+	}
+	```
+
+- **Response**: consumed by client-side JavaScript in the HTML; structure is not fully typed in Dart but expected to be a list of final rankings.
+
+### Booking: Fetch Reservations
+
+- **URL**: `POST https://app.forcempower.com/booking/api/fetch_reservations.php`
+- **Used in**: Home screen slot availability check.
+- **Request body (form-encoded)**
+
+	```json
+	{
+		"date": "YYYY-MM-DD",
+		"timeSlot": "HH:MM AM/PM"
+	}
+	```
+
+- **Success response (as used by client)**
+
+	```json
+	{
+		"error": false,
+		"message": "<string>",
+		"data": [
+			{ /* mapped into SlotDetails.fromJson(...) */ }
+		]
+	}
+	```
+
+### Booking: Modify Username
+
+- **URL**: `POST https://app.forcempower.com/booking/api/modify_username.php`
+- **Used in**: Updating displayed player name from the home screen.
+- **Request body (FormData)**
+
+	```json
+	{
+		"userID": "<string>",
+		"username": "<string>"
+	}
+	```
+
+- **Success response (as used by client)**
+
+	```json
+	{
+		"error": false,
+		"message": "<string>"
+	}
+	```
 
 ## Storage
 
