@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mini Golf API Tester</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		:root {
+			--primary: #10b981;
+			--primary-dark: #059669;
+			--primary-light: #d1fae5;
+			--success: #34d399;
+			--error: #ef4444;
+			--warning: #f59e0b;
+			--bg-dark: #0f172a;
+			--bg-light: #f8fafc;
+			--surface: #ffffff;
+			--surface-hover: #f1f5f9;
+			--text-primary: #1e293b;
+			--text-secondary: #64748b;
+			--text-muted: #94a3b8;
+			--border: #e2e8f0;
+			--ring: rgba(16, 185, 129, 0.1);
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", sans-serif;
+			color: var(--text-primary);
+			background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+			min-height: 100vh;
+			padding: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		main.card {
+			width: min(900px, 100%);
+			background: var(--surface);
+			border-radius: 24px;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+			overflow: hidden;
+			border: 1px solid var(--border);
+			animation: slideUp 0.6s ease-out;
+		}
+
+		@keyframes slideUp {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.hero {
+			background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+			padding: 40px 30px;
+			color: #ffffff;
+			text-align: center;
+		}
+
+		h1 {
+			font-size: clamp(1.5rem, 5vw, 2.5rem);
+			font-weight: 700;
+			letter-spacing: -0.5px;
+			margin-bottom: 8px;
+		}
+
+		.hero p {
+			font-size: 1rem;
+			opacity: 0.95;
+			color: #d1fae5;
+		}
+
+		.content {
+			padding: 40px 30px;
+			display: grid;
+			gap: 28px;
+		}
+
+		.section {
+			display: grid;
+			gap: 16px;
+		}
+
+		.section-title {
+			font-size: 0.875rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.8px;
+			color: var(--text-secondary);
+			margin-bottom: 8px;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 16px;
+		}
+
+		.input-group {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		label {
+			font-size: 0.9rem;
+			font-weight: 600;
+			color: var(--text-primary);
+		}
+
+		input {
+			padding: 12px 16px;
+			border: 2px solid var(--border);
+			border-radius: 12px;
+			font-size: 1rem;
+			background: var(--surface);
+			color: var(--text-primary);
+			transition: all 0.2s ease;
+			outline: none;
+		}
+
+		input::placeholder {
+			color: var(--text-muted);
+		}
+
+		input:focus {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 3px var(--ring);
+			background: #f0fdf9;
+		}
+
+		.button-group {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+			gap: 12px;
+		}
+
+		button {
+			padding: 14px 20px;
+			border: none;
+			border-radius: 12px;
+			font-size: 0.95rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			position: relative;
+			overflow: hidden;
+			letter-spacing: 0.3px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			min-height: 48px;
+		}
+
+		button.primary {
+			background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+			color: white;
+			box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+		}
+
+		button.primary:hover:not(:disabled) {
+			transform: translateY(-2px);
+			box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+		}
+
+		button:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+			transform: none;
+		}
+
+		button:active:not(:disabled) {
+			transform: translateY(0);
+		}
+
+		.status-bar {
+			padding: 16px 20px;
+			border-radius: 12px;
+			font-weight: 600;
+			font-size: 0.95rem;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			min-height: 48px;
+			background: var(--surface-hover);
+			border: 2px solid var(--border);
+			color: var(--text-secondary);
+			transition: all 0.3s ease;
+		}
+
+		.status-bar::before {
+			content: "•";
+			font-size: 1.5rem;
+			animation: pulse 2s infinite;
+		}
+
+		.status-bar.error {
+			background: #fee2e2;
+			border-color: #fecaca;
+			color: var(--error);
+		}
+
+		.status-bar.error::before {
+			animation: none;
+			color: var(--error);
+		}
+
+		.status-bar.ok {
+			background: #d1fae5;
+			border-color: #a7f3d0;
+			color: #059669;
+		}
+
+		.status-bar.ok::before {
+			animation: none;
+			content: "✓";
+		}
+
+		.scorecard-shell {
+			display: none;
+		}
+
+		.scorecard-shell.is-visible {
+			display: grid;
+		}
+
+		.strike-history {
+			display: none;
+		}
+
+		.strike-history.is-visible {
+			display: grid;
+		}
+
+		.strike-history-head {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			align-items: flex-end;
+			flex-wrap: wrap;
+		}
+
+		.strike-history-title {
+			font-size: 1.05rem;
+			font-weight: 800;
+			color: var(--text-primary);
+		}
+
+		.strike-history-subtitle {
+			margin-top: 4px;
+			font-size: 0.9rem;
+			color: var(--text-muted);
+		}
+
+		.strike-card-list {
+			display: grid;
+			gap: 14px;
+		}
+
+		.strike-card {
+			background: linear-gradient(180deg, #ffffff 0%, #f8fcfd 100%);
+			border: 1px solid #dbe7ec;
+			border-radius: 20px;
+			padding: 18px;
+			box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.strike-card::before {
+			content: "";
+			position: absolute;
+			inset: 0 auto 0 0;
+			width: 5px;
+			background: linear-gradient(180deg, var(--primary) 0%, #7dd3fc 100%);
+		}
+
+		.strike-card-top {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			align-items: flex-start;
+			flex-wrap: wrap;
+		}
+
+		.strike-card-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 12px;
+			border-radius: 999px;
+			background: #effdf6;
+			border: 1px solid #bdebd2;
+			color: #0f766e;
+			font-size: 0.82rem;
+			font-weight: 800;
+		}
+
+		.strike-card-score {
+			font-size: 2rem;
+			font-weight: 900;
+			line-height: 1;
+			color: #082f2b;
+		}
+
+		.strike-card-meta {
+			margin-top: 12px;
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 10px;
+		}
+
+		.strike-meta-item {
+			background: #f8fcfd;
+			border: 1px solid #dbe7ec;
+			border-radius: 14px;
+			padding: 10px 12px;
+		}
+
+		.strike-meta-label {
+			font-size: 0.68rem;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			font-weight: 800;
+			color: #6a818a;
+		}
+
+		.strike-meta-value {
+			margin-top: 6px;
+			font-size: 0.98rem;
+			font-weight: 700;
+			color: #12313a;
+			word-break: break-word;
+		}
+
+		.strike-card-note {
+			margin-top: 12px;
+			font-size: 0.92rem;
+			color: #54707a;
+			line-height: 1.5;
+		}
+
+		.scorecard-page {
+			background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+			border: 1px solid #d7e3eb;
+			border-radius: 24px;
+			box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+			color: #0f172a;
+			padding: 28px;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.scorecard-page::before {
+			content: "";
+			position: absolute;
+			inset: auto -20% -35% auto;
+			width: 220px;
+			height: 220px;
+			border-radius: 999px;
+			background: radial-gradient(circle, rgba(16, 185, 129, 0.18), transparent 68%);
+			pointer-events: none;
+		}
+
+		.scorecard-top {
+			display: flex;
+			justify-content: space-between;
+			gap: 16px;
+			align-items: flex-start;
+			padding-bottom: 18px;
+			border-bottom: 1px solid #d9e4ea;
+		}
+
+		.scorecard-kicker {
+			font-size: 0.75rem;
+			letter-spacing: 0.2em;
+			text-transform: uppercase;
+			color: #0f766e;
+			font-weight: 800;
+		}
+
+		.scorecard-title {
+			margin-top: 8px;
+			font-size: clamp(1.7rem, 4vw, 2.7rem);
+			font-weight: 800;
+			letter-spacing: -0.04em;
+			color: #082f2b;
+		}
+
+		.scorecard-subtitle {
+			margin-top: 8px;
+			font-size: 0.98rem;
+			line-height: 1.6;
+			color: #45606a;
+			max-width: 34rem;
+		}
+
+		.scorecard-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 14px;
+			border-radius: 999px;
+			background: #e8fff4;
+			border: 1px solid #bcebd7;
+			font-weight: 700;
+			color: #0f766e;
+			white-space: nowrap;
+		}
+
+		.scorecard-grid {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 14px;
+			margin-top: 20px;
+		}
+
+		.scorecard-metric {
+			background: #f8fcfd;
+			border: 1px solid #dbe7ec;
+			border-radius: 18px;
+			padding: 16px 18px;
+		}
+
+		.scorecard-label {
+			font-size: 0.72rem;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			font-weight: 800;
+			color: #67808a;
+		}
+
+		.scorecard-value {
+			margin-top: 8px;
+			font-size: 1.4rem;
+			font-weight: 800;
+			color: #0f172a;
+		}
+
+		.scorecard-table {
+			margin-top: 20px;
+			border: 1px solid #dbe7ec;
+			border-radius: 20px;
+			overflow: hidden;
+			background: #fff;
+		}
+
+		.scorecard-table-head,
+		.scorecard-table-row {
+			display: grid;
+			grid-template-columns: 1.35fr 0.65fr 0.65fr 0.9fr;
+			gap: 12px;
+			align-items: center;
+		}
+
+		.scorecard-table-head {
+			padding: 14px 18px;
+			background: #f1f7f8;
+			font-size: 0.72rem;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			font-weight: 800;
+			color: #68808b;
+		}
+
+		.scorecard-table-row {
+			padding: 16px 18px;
+			border-top: 1px solid #edf2f5;
+			font-size: 0.98rem;
+			color: #16313a;
+		}
+
+		.scorecard-table-row:nth-child(even) {
+			background: #fbfdfe;
+		}
+
+		.scorecard-footer {
+			margin-top: 18px;
+			display: flex;
+			justify-content: space-between;
+			gap: 16px;
+			flex-wrap: wrap;
+			align-items: center;
+			color: #54707a;
+			font-size: 0.92rem;
+		}
+
+		.scorecard-actions {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+		}
+
+		button.secondary {
+			background: #ffffff;
+			color: #0f172a;
+			border: 1px solid #c9d9e1;
+			box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+		}
+
+		button.secondary:hover:not(:disabled) {
+			transform: translateY(-2px);
+			border-color: #8ed6b3;
+		}
+
+		@media print {
+			body {
+				background: #fff;
+				padding: 0;
+			}
+
+			body * {
+				visibility: hidden;
+			}
+
+			#scorecardPanel,
+			#scorecardPanel * {
+				visibility: visible;
+			}
+
+			#scorecardPanel {
+				display: block !important;
+				position: fixed;
+				inset: 0;
+				padding: 0;
+				margin: 0;
+				background: #fff;
+			}
+
+			.scorecard-page {
+				box-shadow: none;
+				border-radius: 0;
+				min-height: 100vh;
+			}
+		}
+
+		@keyframes pulse {
+			0%, 100% { opacity: 1; }
+			50% { opacity: 0.3; }
+		}
+
+		.panel {
+			background: var(--surface-hover);
+			border: 2px solid var(--border);
+			border-radius: 12px;
+			padding: 20px;
+			display: grid;
+			gap: 12px;
+		}
+
+		.panel h3 {
+			font-size: 0.95rem;
+			font-weight: 700;
+			color: var(--text-primary);
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+
+		.meta-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 16px;
+		}
+
+		.meta-item {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.meta-label {
+			font-size: 0.75rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: var(--text-muted);
+		}
+
+		.meta-value {
+			font-size: 1rem;
+			font-weight: 600;
+			color: var(--text-primary);
+			word-break: break-all;
+			font-family: "Monaco", "Courier New", monospace;
+		}
+
+		.checks-list {
+			display: grid;
+			gap: 8px;
+		}
+
+		.check-item {
+			display: flex;
+			align-items: flex-start;
+			gap: 12px;
+			padding: 12px;
+			background: white;
+			border-radius: 8px;
+			border-left: 4px solid var(--border);
+			font-size: 0.9rem;
+			transition: all 0.2s ease;
+		}
+
+		.check-item.pass {
+			border-left-color: var(--success);
+			background: #f0fdf4;
+		}
+
+		.check-item.pass::before {
+			content: "✓";
+			color: var(--success);
+			font-weight: 700;
+			flex-shrink: 0;
+		}
+
+		.check-item.fail {
+			border-left-color: var(--error);
+			background: #fef2f2;
+		}
+
+		.check-item.fail::before {
+			content: "✕";
+			color: var(--error);
+			font-weight: 700;
+			flex-shrink: 0;
+		}
+
+		.check-text {
+			color: var(--text-primary);
+		}
+
+		pre {
+			background: #1e293b;
+			color: #e2e8f0;
+			padding: 16px;
+			border-radius: 8px;
+			overflow: auto;
+			font-size: 0.85rem;
+			font-family: "Monaco", "Courier New", monospace;
+			line-height: 1.6;
+			max-height: 300px;
+		}
+
+		@media (max-width: 640px) {
+			.content {
+				padding: 24px 16px;
+				gap: 20px;
+			}
+
+			.hero {
+				padding: 30px 20px;
+			}
+
+			.grid,
+			.meta-grid,
+			.button-group {
+				grid-template-columns: 1fr;
+			}
+
+			button {
+				width: 100%;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="card">
+		<section class="hero">
+			<h1>⛳ Mini Golf API Tester</h1>
+			<p>Quick and easy API testing for game interactions</p>
+		</section>
+
+		<section class="content">
+			<!-- Input Section -->
+			<div class="section">
+				<h2 class="section-title">API Parameters</h2>
+				<div class="grid">
+					<div class="input-group">
+						<label for="ballId">Ball ID</label>
+						<input id="ballId" value="5" placeholder="Example: 5" type="text">
+					</div>
+					<div class="input-group">
+						<label for="holeId">Hole ID</label>
+						<input id="holeId" value="h001" placeholder="Example: h001" type="text">
+					</div>
+				</div>
+			</div>
+
+			<!-- Status -->
+			<div id="status" class="status-bar">
+				Ready to test APIs
+			</div>
+
+			<!-- API Actions -->
+			<div class="section">
+				<h2 class="section-title">Test Actions</h2>
+				<div class="button-group">
+					<button id="startBtn" class="primary">🎮 Game Start</button>
+					<button id="strikeBtn" class="primary">⚡ Ball Strike</button>
+					<button id="endBtn" class="primary">🏁 Hole End</button>
+				</div>
+			</div>
+
+			<!-- Request Info Panel -->
+			<div class="panel">
+				<h3>Request Details</h3>
+				<div class="meta-grid">
+					<div class="meta-item">
+						<span class="meta-label">Endpoint</span>
+						<span class="meta-value" id="endpointTxt">-</span>
+					</div>
+					<div class="meta-item">
+						<span class="meta-label">HTTP Status</span>
+						<span class="meta-value" id="httpStatus">-</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Response Checks -->
+			<div class="panel">
+				<h3>Validation Results</h3>
+				<div class="checks-list" id="checkList">
+					<div style="text-align: center; color: var(--text-muted); padding: 20px;">Run an API test to see results</div>
+				</div>
+			</div>
+
+			<!-- Raw Response -->
+			<div class="panel">
+				<h3>Raw Response</h3>
+				<pre id="rawResponse">No response yet.</pre>
+			</div>
+
+			<div id="strikeHistoryPanel" class="strike-history panel">
+				<div class="strike-history-head">
+					<div>
+						<div class="strike-history-title">Strike scorecards</div>
+						<div class="strike-history-subtitle">Each successful strike gets its own score card preview.</div>
+					</div>
+					<div class="scorecard-badge" id="strikeCountBadge">0 strikes</div>
+				</div>
+				<div id="strikeCardList" class="strike-card-list"></div>
+			</div>
+
+			<div id="scorecardPanel" class="scorecard-shell panel">
+				<div class="scorecard-page">
+					<div class="scorecard-top">
+						<div>
+							<div class="scorecard-kicker">Ac Golf Scorecard</div>
+							<div class="scorecard-title">Hole complete</div>
+							<div class="scorecard-subtitle" id="scorecardSubtitle">A clean end-of-hole summary ready for preview, printing, or saving as PDF.</div>
+						</div>
+						<div class="scorecard-badge" id="scorecardBadge">PDF Preview</div>
+					</div>
+
+					<div class="scorecard-grid" id="scorecardMetrics"></div>
+
+					<div class="scorecard-table" aria-label="Hole score details">
+						<div class="scorecard-table-head">
+							<div>Player</div>
+							<div>Ball</div>
+							<div>Hole</div>
+							<div>Final score</div>
+						</div>
+						<div class="scorecard-table-row" id="scorecardRow">
+							<div id="scorecardPlayer">-</div>
+							<div id="scorecardBall">-</div>
+							<div id="scorecardHole">-</div>
+							<div id="scorecardFinalScore">-</div>
+						</div>
+					</div>
+
+					<div class="scorecard-footer">
+						<div id="scorecardFooterText">Use the print button to save this view as a PDF.</div>
+						<div class="scorecard-actions">
+							<button id="printBtn" class="secondary">Print / Save PDF</button>
+							<button id="hideScorecardBtn" class="secondary">Hide scorecard</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		const endpoints = {
+			start: "https://app.forcempower.com/minigolf/api/v4/game_start_by_hole_ball.php",
+			strike: "https://app.forcempower.com/minigolf/api/v4/ball_strike.php",
+			end: "https://app.forcempower.com/minigolf/api/v4/hole_end.php"
+		};
+
+		const ballInput = document.getElementById("ballId");
+		const holeInput = document.getElementById("holeId");
+		const startBtn = document.getElementById("startBtn");
+		const strikeBtn = document.getElementById("strikeBtn");
+		const endBtn = document.getElementById("endBtn");
+		const statusEl = document.getElementById("status");
+		const rawResponseEl = document.getElementById("rawResponse");
+		const checkListEl = document.getElementById("checkList");
+		const httpStatusEl = document.getElementById("httpStatus");
+		const endpointTxtEl = document.getElementById("endpointTxt");
+		const strikeHistoryPanel = document.getElementById("strikeHistoryPanel");
+		const strikeCardListEl = document.getElementById("strikeCardList");
+		const strikeCountBadge = document.getElementById("strikeCountBadge");
+		const scorecardPanel = document.getElementById("scorecardPanel");
+		const scorecardMetricsEl = document.getElementById("scorecardMetrics");
+		const scorecardSubtitleEl = document.getElementById("scorecardSubtitle");
+		const scorecardBadgeEl = document.getElementById("scorecardBadge");
+		const scorecardPlayerEl = document.getElementById("scorecardPlayer");
+		const scorecardBallEl = document.getElementById("scorecardBall");
+		const scorecardHoleEl = document.getElementById("scorecardHole");
+		const scorecardFinalScoreEl = document.getElementById("scorecardFinalScore");
+		const scorecardFooterTextEl = document.getElementById("scorecardFooterText");
+		const printBtn = document.getElementById("printBtn");
+		const hideScorecardBtn = document.getElementById("hideScorecardBtn");
+		let strikeHistory = [];
+
+		function setStatus(text, type) {
+			statusEl.textContent = text;
+			statusEl.className = "status-bar" + (type ? " " + type : "");
+		}
+
+		function renderChecks(checks) {
+			checkListEl.innerHTML = "";
+			
+			if (!checks.length) {
+				const div = document.createElement("div");
+				div.style.cssText = "text-align: center; color: var(--text-muted); padding: 20px;";
+				div.textContent = "No checks performed yet.";
+				checkListEl.appendChild(div);
+				return;
+			}
+
+			checks.forEach((item) => {
+				const li = document.createElement("div");
+				li.className = `check-item ${item.ok ? "pass" : "fail"}`;
+				const span = document.createElement("span");
+				span.className = "check-text";
+				span.textContent = item.message;
+				li.appendChild(span);
+				checkListEl.appendChild(li);
+			});
+		}
+
+		function validateStart(body, requestedBall, requestedHole) {
+			const checks = [];
+			checks.push({ ok: body && typeof body === "object", message: "Response is valid JSON object" });
+			checks.push({ ok: body.error === false, message: "error is false" });
+			checks.push({ ok: body.success === true, message: "success is true" });
+			checks.push({ ok: String(body.ball_id) === requestedBall, message: `ball_id matches (${body.ball_id})` });
+			checks.push({ ok: String(body.hole_id) === requestedHole, message: `hole_id matches (${body.hole_id})` });
+			checks.push({ ok: body.hole_status === "active", message: `hole_status is active` });
+			checks.push({ ok: Number.isFinite(Number(body.game_id)), message: `game_id is numeric (${body.game_id})` });
+			checks.push({ ok: Number.isFinite(Number(body.player_id)), message: `player_id is numeric (${body.player_id})` });
+			checks.push({ ok: Number.isFinite(Number(body.score)), message: `score is numeric (${body.score})` });
+			return checks;
+		}
+
+		function validateStrike(body, requestedBall) {
+			const checks = [];
+			checks.push({ ok: body && typeof body === "object", message: "Response is valid JSON object" });
+			checks.push({ ok: body.error === false, message: "error is false" });
+			checks.push({ ok: body.success === true, message: "success is true" });
+			checks.push({ ok: Number.isFinite(Number(body.player_id)), message: `player_id is numeric (${body.player_id})` });
+			checks.push({ ok: Number.isFinite(Number(body.game_id)), message: `game_id is numeric (${body.game_id})` });
+			checks.push({ ok: typeof body.hole_id === "string" && body.hole_id.length > 0, message: `hole_id is present (${body.hole_id})` });
+			checks.push({ ok: Number.isFinite(Number(body.new_score)), message: `new_score is numeric (${body.new_score})` });
+			checks.push({ ok: requestedBall.length > 0, message: `ball_id was sent (${requestedBall})` });
+			return checks;
+		}
+
+		function validateEnd(body, requestedBall, requestedHole) {
+			const checks = [];
+			checks.push({ ok: body && typeof body === "object", message: "Response is valid JSON object" });
+			checks.push({ ok: body.error === false, message: "error is false" });
+			checks.push({ ok: body.success === true, message: "success is true" });
+			checks.push({ ok: requestedBall.length > 0, message: `ball_id was sent (${requestedBall})` });
+			checks.push({ ok: String(body.hole_id) === requestedHole, message: `hole_id matches (${body.hole_id})` });
+			checks.push({ ok: Number.isFinite(Number(body.player_id)), message: `player_id is numeric (${body.player_id})` });
+			checks.push({ ok: Number.isFinite(Number(body.game_id)), message: `game_id is numeric (${body.game_id})` });
+			checks.push({ ok: Number.isFinite(Number(body.final_score)), message: `final_score is numeric (${body.final_score})` });
+			checks.push({ ok: String(body.hole_status || "").toUpperCase() === "FINISHED", message: `hole_status is FINISHED` });
+			return checks;
+		}
+
+		function setBusy(isBusy) {
+			startBtn.disabled = isBusy;
+			strikeBtn.disabled = isBusy;
+			endBtn.disabled = isBusy;
+		}
+
+		function hideScorecard() {
+			scorecardPanel.classList.remove("is-visible");
+			scorecardPanel.style.display = "none";
+		}
+
+		function renderStrikeHistory() {
+			strikeCountBadge.textContent = `${strikeHistory.length} strike${strikeHistory.length === 1 ? "" : "s"}`;
+			strikeHistoryPanel.classList.toggle("is-visible", strikeHistory.length > 0);
+
+			if (!strikeHistory.length) {
+				strikeCardListEl.innerHTML = `
+					<div style="text-align: center; color: var(--text-muted); padding: 18px;">No strike scorecards yet.</div>
+				`;
+				return;
+			}
+
+			strikeCardListEl.innerHTML = strikeHistory.map((item) => `
+				<div class="strike-card">
+					<div class="strike-card-top">
+						<div>
+							<div class="strike-card-badge">Strike ${item.index}</div>
+							<div class="strike-card-note">${item.note}</div>
+						</div>
+						<div class="strike-card-score">${item.newScore}</div>
+					</div>
+					<div class="strike-card-meta">
+						<div class="strike-meta-item">
+							<div class="strike-meta-label">Player ID</div>
+							<div class="strike-meta-value">${item.playerId}</div>
+						</div>
+						<div class="strike-meta-item">
+							<div class="strike-meta-label">Game ID</div>
+							<div class="strike-meta-value">${item.gameId}</div>
+						</div>
+						<div class="strike-meta-item">
+							<div class="strike-meta-label">Ball ID</div>
+							<div class="strike-meta-value">${item.ballId}</div>
+						</div>
+						<div class="strike-meta-item">
+							<div class="strike-meta-label">Hole ID</div>
+							<div class="strike-meta-value">${item.holeId}</div>
+						</div>
+					</div>
+				</div>
+			`).join("");
+		}
+
+		function addStrikeCard(body, requestedBall, requestedHole) {
+			const strikeNumber = strikeHistory.length + 1;
+			const newScore = body.new_score ?? body.final_score ?? body.score ?? "-";
+			const completedAt = new Date().toLocaleTimeString([], {
+				hour: "numeric",
+				minute: "2-digit"
+			});
+
+			strikeHistory.unshift({
+				index: strikeNumber,
+				playerId: body.player_id ?? body.playerId ?? "-",
+				gameId: body.game_id ?? body.gameId ?? "-",
+				ballId: requestedBall || body.ball_id || "-",
+				holeId: requestedHole || body.hole_id || "-",
+				newScore,
+				note: `Strike recorded at ${completedAt}. New score updated to ${newScore}.`
+			});
+
+			renderStrikeHistory();
+		}
+
+		function showScorecard(body, requestedBall, requestedHole) {
+			const rawPlayerId = body.player_id ?? body.playerId ?? body.player ?? "-";
+			const rawGameId = body.game_id ?? body.gameId ?? "-";
+			const finalScore = body.final_score ?? body.score ?? body.new_score ?? "-";
+			const holeStatus = String(body.hole_status || "FINISHED").toUpperCase();
+			const completedAt = new Date().toLocaleString([], {
+				dateStyle: "medium",
+				timeStyle: "short"
+			});
+
+			scorecardMetricsEl.innerHTML = [
+				{ label: "Game ID", value: rawGameId },
+				{ label: "Player ID", value: rawPlayerId },
+				{ label: "Hole status", value: holeStatus },
+				{ label: "Completed", value: completedAt }
+			].map((item) => `
+				<div class="scorecard-metric">
+					<div class="scorecard-label">${item.label}</div>
+					<div class="scorecard-value">${item.value}</div>
+				</div>
+			`).join("");
+
+			scorecardPlayerEl.textContent = rawPlayerId;
+			scorecardBallEl.textContent = requestedBall || body.ball_id || "-";
+			scorecardHoleEl.textContent = requestedHole || body.hole_id || "-";
+			scorecardFinalScoreEl.textContent = finalScore;
+			scorecardSubtitleEl.textContent = `Hole ${requestedHole || body.hole_id || "-"} has been marked finished. Print this preview to save a PDF copy of the scorecard.`;
+			scorecardBadgeEl.textContent = holeStatus === "FINISHED" ? "Ready for PDF" : "PDF Preview";
+			scorecardFooterTextEl.textContent = `Response received at ${completedAt}.`;
+			scorecardPanel.style.display = "grid";
+			scorecardPanel.classList.add("is-visible");
+		}
+
+		function resetStrikeHistory() {
+			strikeHistory = [];
+			renderStrikeHistory();
+		}
+
+		async function callApi(kind) {
+			const ballId = ballInput.value.trim();
+			const holeId = holeInput.value.trim();
+			const endpoint = endpoints[kind];
+
+			if (!ballId) {
+				setStatus("Please enter a Ball ID", "error");
+				return;
+			}
+
+			if ((kind === "start" || kind === "end") && !holeId) {
+				setStatus("Please enter a Hole ID for this API", "error");
+				return;
+			}
+
+			setBusy(true);
+			setStatus("Calling API...", "");
+			endpointTxtEl.textContent = endpoint;
+			httpStatusEl.textContent = "⏳ Loading...";
+			renderChecks([]);
+
+			const payload = kind === "strike"
+				? { ball_id: ballId }
+				: { ball_id: ballId, hole_id: holeId };
+
+			try {
+				const response = await fetch(endpoint, {
+					method: "POST",
+					headers: {
+						"Content-Type": "text/plain"
+					},
+					body: JSON.stringify(payload)
+				});
+
+				httpStatusEl.textContent = `${response.status} ${response.statusText || ""}`.trim();
+				const rawText = await response.text();
+				rawResponseEl.textContent = rawText || "(empty response body)";
+
+				let body;
+				try {
+					body = JSON.parse(rawText);
+				} catch (err) {
+					setStatus("⚠️ Response is not valid JSON", "error");
+					renderChecks([{ ok: false, message: "Response body could not be parsed as JSON" }]);
+					return;
+				}
+
+				let checks = [];
+				if (kind === "start") {
+					checks = validateStart(body, ballId, holeId);
+				} else if (kind === "strike") {
+					checks = validateStrike(body, ballId);
+				} else {
+					checks = validateEnd(body, ballId, holeId);
+				}
+				renderChecks(checks);
+
+				const allOk = response.ok && checks.every((item) => item.ok);
+				if (allOk) {
+					setStatus("✓ Success! All checks passed.", "ok");
+					if (kind === "start") {
+						resetStrikeHistory();
+					}
+					if (kind === "end") {
+						showScorecard(body, ballId, holeId);
+					} else if (kind === "strike") {
+						addStrikeCard(body, ballId, holeId);
+					} else {
+						hideScorecard();
+					}
+				} else {
+					setStatus("⚠️ Response received but some checks failed", "error");
+					if (kind === "start") {
+						resetStrikeHistory();
+					}
+					if (kind === "end") {
+						showScorecard(body, ballId, holeId);
+					} else if (kind === "strike") {
+						addStrikeCard(body, ballId, holeId);
+					} else {
+						hideScorecard();
+					}
+				}
+			} catch (err) {
+				setStatus(`❌ Request failed: ${err.message || "Unknown error"}`, "error");
+				renderChecks([{ ok: false, message: `Network error: ${err.message}` }]);
+				rawResponseEl.textContent = String(err);
+				hideScorecard();
+			} finally {
+				setBusy(false);
+			}
+		}
+
+		startBtn.addEventListener("click", function () { callApi("start"); });
+		strikeBtn.addEventListener("click", function () { callApi("strike"); });
+		endBtn.addEventListener("click", function () { callApi("end"); });
+		printBtn.addEventListener("click", function () { window.print(); });
+		hideScorecardBtn.addEventListener("click", function () { hideScorecard(); });
+		renderChecks([]);
+		renderStrikeHistory();
+		hideScorecard();
+	</script>
+</body>
+</html>

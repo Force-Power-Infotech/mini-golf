@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#08110d" />
+  <title>Mini Golf Check-In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #050807;
+      --bg-1: #08110d;
+      --bg-2: #0d1d16;
+      --accent: #55e6a3;
+      --accent-2: #7cdbff;
+      --accent-3: #ffd36f;
+      --panel: rgba(10, 18, 14, 0.78);
+      --panel-strong: rgba(13, 25, 19, 0.92);
+      --line: rgba(255, 255, 255, 0.09);
+      --text-soft: rgba(233, 248, 241, 0.72);
+    }
+
+    html, body {
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(85, 230, 163, 0.18), transparent 28%),
+        radial-gradient(circle at 90% 10%, rgba(124, 219, 255, 0.16), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(255, 211, 111, 0.12), transparent 26%),
+        linear-gradient(135deg, var(--bg-0) 0%, var(--bg-1) 42%, var(--bg-2) 100%);
+      color: #f7fff9;
+      font-family: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+    }
+
+    .title-font {
+      font-family: "Syne", "Plus Jakarta Sans", sans-serif;
+    }
+
+    .aurora {
+      position: absolute;
+      inset: auto;
+      border-radius: 999px;
+      filter: blur(10px);
+      opacity: 0.7;
+      pointer-events: none;
+      animation: floatGlow 10s ease-in-out infinite;
+    }
+
+    .aurora.one {
+      width: 22rem;
+      height: 22rem;
+      background: rgba(85, 230, 163, 0.18);
+      top: -5rem;
+      left: -4rem;
+    }
+
+    .aurora.two {
+      width: 18rem;
+      height: 18rem;
+      background: rgba(124, 219, 255, 0.16);
+      bottom: 2rem;
+      right: -5rem;
+      animation-delay: -4s;
+    }
+
+    .aurora.three {
+      width: 12rem;
+      height: 12rem;
+      background: rgba(255, 211, 111, 0.16);
+      bottom: 12rem;
+      left: 30%;
+      animation-delay: -7s;
+    }
+
+    @keyframes floatGlow {
+      0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+      50% { transform: translate3d(0, -18px, 0) scale(1.06); }
+    }
+
+    .grain {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.14;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent 90%);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .panel-strong {
+      background: var(--panel-strong);
+    }
+
+    .badge {
+      border: 1px solid rgba(85, 230, 163, 0.22);
+      background: rgba(85, 230, 163, 0.1);
+      color: #bdf8d7;
+    }
+
+    .screen {
+      display: none;
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+
+    .screen.is-visible {
+      display: block;
+    }
+
+    .screen.is-entering {
+      animation: screenIn 420ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes screenIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .field-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(233, 248, 241, 0.56);
+    }
+
+    .field-input,
+    .field-select {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: #f7fff9;
+      border-radius: 1rem;
+      padding: 0.95rem 1rem;
+      outline: none;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .field-input::placeholder {
+      color: rgba(247, 255, 249, 0.34);
+    }
+
+    .field-input:focus,
+    .field-select:focus {
+      border-color: rgba(85, 230, 163, 0.65);
+      background: rgba(85, 230, 163, 0.08);
+      box-shadow: 0 0 0 4px rgba(85, 230, 163, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .action-btn {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(135deg, #5dffab 0%, #2abf83 44%, #17a16d 100%);
+      color: #062011;
+      box-shadow: 0 16px 30px rgba(23, 161, 109, 0.28);
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+    .action-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, rgba(255,255,255,0.22), transparent 46%);
+      pointer-events: none;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 20px 36px rgba(23, 161, 109, 0.34);
+      filter: saturate(1.05);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .ghost-btn {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.03);
+      color: #eaf8f0;
+      transition: background 180ms ease, transform 180ms ease, border-color 180ms ease;
+    }
+
+    .ghost-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(85, 230, 163, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .step-dot {
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      transition: transform 220ms ease, width 220ms ease, background 220ms ease, box-shadow 220ms ease;
+    }
+
+    .step-dot.active {
+      width: 2.1rem;
+      background: linear-gradient(90deg, #5dffab 0%, #7cdbff 100%);
+      box-shadow: 0 0 0 4px rgba(85, 230, 163, 0.12);
+    }
+
+    .step-dot.done {
+      background: rgba(93, 255, 171, 0.65);
+    }
+
+    .gear-card {
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.03);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+    }
+
+    .gear-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(85, 230, 163, 0.28);
+      background: rgba(85, 230, 163, 0.08);
+    }
+
+    .gear-card.selected {
+      border-color: rgba(85, 230, 163, 0.6);
+      background: rgba(85, 230, 163, 0.14);
+      box-shadow: 0 0 0 1px rgba(85, 230, 163, 0.16) inset;
+    }
+
+    .players-list {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .player-row {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 1rem;
+      padding: 0.85rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: 0.6rem;
+      align-items: center;
+      transition: border-color 180ms ease, background 180ms ease;
+    }
+
+    .player-row:focus-within {
+      border-color: rgba(85, 230, 163, 0.42);
+      background: rgba(85, 230, 163, 0.08);
+    }
+
+    .assignment-row {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 1rem;
+      padding: 0.85rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0.6rem;
+      align-items: center;
+      transition: border-color 180ms ease, background 180ms ease;
+    }
+
+    .assignment-row:focus-within {
+      border-color: rgba(124, 219, 255, 0.42);
+      background: rgba(124, 219, 255, 0.08);
+    }
+
+    .assignment-pill {
+      border: 1px solid rgba(124, 219, 255, 0.26);
+      background: rgba(124, 219, 255, 0.14);
+      color: #d9f2ff;
+    }
+
+    .assignment-meta {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 0.9rem;
+      padding: 0.65rem 0.8rem;
+    }
+
+    .error-list {
+      margin-top: 0.9rem;
+      display: grid;
+      gap: 0.6rem;
+      max-height: 11rem;
+      overflow: auto;
+      padding-right: 0.2rem;
+    }
+
+    .error-item {
+      border: 1px solid rgba(255, 139, 165, 0.34);
+      background: rgba(255, 94, 131, 0.11);
+      border-radius: 0.9rem;
+      padding: 0.7rem 0.85rem;
+    }
+
+    .mini-btn {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: #eaf8f0;
+      border-radius: 0.9rem;
+      padding: 0.72rem 0.95rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .mini-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(85, 230, 163, 0.34);
+      background: rgba(85, 230, 163, 0.1);
+    }
+
+    .mini-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .remove-btn {
+      border-color: rgba(255, 159, 177, 0.38);
+      color: #ffdce3;
+      background: rgba(255, 94, 131, 0.08);
+    }
+
+    .remove-btn:hover {
+      border-color: rgba(255, 159, 177, 0.55);
+      background: rgba(255, 94, 131, 0.16);
+    }
+
+    .summary-grid {
+      display: grid;
+      gap: 0.65rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .summary-item {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 0.9rem;
+      padding: 0.65rem 0.8rem;
+    }
+
+    .summary-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(233, 248, 241, 0.55);
+    }
+
+    .summary-value {
+      margin-top: 0.15rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #f4fff8;
+    }
+
+    .processed-list {
+      margin-top: 0.9rem;
+      display: grid;
+      gap: 0.6rem;
+      max-height: 14.5rem;
+      overflow: auto;
+      padding-right: 0.2rem;
+    }
+
+    .processed-item {
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 0.9rem;
+      padding: 0.7rem 0.85rem;
+    }
+
+    .processed-item.success {
+      border-color: rgba(85, 230, 163, 0.3);
+      background: rgba(85, 230, 163, 0.1);
+    }
+
+    .processed-item.error {
+      border-color: rgba(255, 139, 165, 0.34);
+      background: rgba(255, 94, 131, 0.11);
+    }
+
+    @media (max-width: 640px) {
+      .player-row {
+        grid-template-columns: 1fr;
+      }
+
+      .assignment-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .message-pill {
+      min-height: 1.5rem;
+    }
+
+    .spinner {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .spinner span {
+      width: 0.4rem;
+      height: 0.4rem;
+      border-radius: 999px;
+      background: currentColor;
+      animation: pulseDots 900ms infinite ease-in-out;
+    }
+
+    .spinner span:nth-child(2) { animation-delay: 120ms; }
+    .spinner span:nth-child(3) { animation-delay: 240ms; }
+
+    @keyframes pulseDots {
+      0%, 80%, 100% { transform: scale(0.7); opacity: 0.45; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="relative overflow-x-hidden text-white">
+  <div class="absolute inset-0 overflow-hidden">
+    <div class="aurora one"></div>
+    <div class="aurora two"></div>
+    <div class="aurora three"></div>
+    <div class="grain"></div>
+  </div>
+
+  <main class="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
+    <div class="grid w-full items-center gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
+      <section class="hidden lg:flex lg:flex-col lg:gap-6 lg:pr-6">
+        <div class="inline-flex w-fit items-center gap-2 rounded-full badge px-4 py-2 text-sm font-semibold">
+          <span class="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_0_6px_rgba(85,230,163,0.15)]"></span>
+          Fast mini golf check-in
+        </div>
+        <div class="max-w-xl space-y-5">
+          <h1 class="title-font text-5xl font-bold tracking-tight text-white xl:text-6xl">
+            A smoother way to get on the course.
+          </h1>
+          <p class="max-w-lg text-lg leading-8" style="color: var(--text-soft);">
+            A modern mini golf lobby flow with quick OTP access, a clean gear picker, and a polished finish screen that feels built for a younger crowd.
+          </p>
+        </div>
+
+        <div class="grid max-w-xl gap-4 sm:grid-cols-3">
+          <div class="panel rounded-3xl p-4">
+            <div class="text-2xl font-bold text-emerald-300">01</div>
+            <div class="mt-2 text-sm text-white/70">Add players in one go</div>
+          </div>
+          <div class="panel rounded-3xl p-4">
+            <div class="text-2xl font-bold text-sky-300">02</div>
+            <div class="mt-2 text-sm text-white/70">Submit to registration API</div>
+          </div>
+          <div class="panel rounded-3xl p-4">
+            <div class="text-2xl font-bold text-amber-300">03</div>
+            <div class="mt-2 text-sm text-white/70">Assign putter and ball fast</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel relative mx-auto w-full max-w-xl rounded-[2rem] p-4 sm:p-6 lg:p-8">
+        <div class="panel-strong rounded-[1.65rem] border border-white/10 p-5 sm:p-6 lg:p-7">
+          <div class="mb-6 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-300 to-cyan-300 text-slate-950 shadow-[0_16px_40px_rgba(85,230,163,0.22)]">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="19" r="2.25" fill="currentColor"></circle>
+                  <path d="M12 16V7.8M12 7.8C12 7.8 8.4 6.1 8.4 3.7C8.4 2.4 9.9 1.2 12 1.2C14.1 1.2 15.6 2.4 15.6 3.7C15.6 5.6 12 7.8 12 7.8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+                  <path d="M7.2 22.2H16.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+                </svg>
+              </div>
+              <div>
+                <div class="title-font text-2xl font-bold tracking-tight">Mini Golf</div>
+                <div class="text-sm text-white/55">Quick lobby check-in</div>
+              </div>
+            </div>
+            <div class="hidden rounded-full border border-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-white/55 sm:block">
+              Responsive UI
+            </div>
+          </div>
+
+          <div class="mb-6 flex items-center gap-2">
+            <div class="step-dot active" id="stepDot1"></div>
+            <div class="step-dot" id="stepDot2"></div>
+            <div class="step-dot" id="stepDot3"></div>
+          </div>
+
+          <div class="space-y-6">
+            <div id="registerScreen" class="screen is-visible is-entering space-y-5">
+              <!-- <div>
+                <h2 class="title-font text-3xl font-bold tracking-tight sm:text-4xl">Register your players</h2>
+                <p class="mt-2 max-w-lg text-sm leading-6 text-white/65 sm:text-base">
+                  Add one or more players and register all entries in a single API request.
+                </p>
+              </div> -->
+
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="field-label">Players list</label>
+                  <button type="button" id="addPlayerBtn" onclick="addPlayerRow()" class="mini-btn">+ Add player</button>
+                </div>
+
+                <div id="playersList" class="players-list"></div>
+              </div>
+
+              <button id="registerBtn"
+                onclick="registerPlayers()"
+                class="action-btn w-full rounded-2xl px-5 py-4 text-base font-bold">
+                Register Players
+              </button>
+            </div>
+
+            <div id="resultScreen" class="screen space-y-5">
+              <div>
+                <h2 class="title-font text-3xl font-bold tracking-tight sm:text-4xl">Assign gear and launch game</h2>
+                <p class="mt-2 max-w-lg text-sm leading-6 text-white/65 sm:text-base">
+                  `game_id` is picked from registration response and used for equipment assignment.
+                </p>
+              </div>
+
+              <div id="summaryGrid" class="summary-grid"></div>
+
+              <div>
+                <div class="field-label">Processed players</div>
+                <div id="processedList" class="processed-list"></div>
+              </div>
+
+              <div class="space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="field-label">Equipment assignment</div>
+                  <div id="gameIdBadge" class="assignment-pill rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em]">Game ID: pending</div>
+                </div>
+
+                <div id="gameMeta" class="assignment-meta text-sm text-white/75">
+                  Register players first to auto-fill assignment rows.
+                </div>
+
+                <div id="assignmentList" class="players-list"></div>
+
+                <button id="assignBtn"
+                  type="button"
+                  onclick="assignEquipment()"
+                  class="action-btn w-full rounded-2xl px-5 py-4 text-base font-bold">
+                  Assign Putter and Ball
+                </button>
+              </div>
+
+              <div>
+                <div class="field-label">Assignment summary</div>
+                <div id="assignmentSummaryGrid" class="summary-grid"></div>
+              </div>
+
+              <div>
+                <div class="field-label">Assignment errors</div>
+                <div id="assignmentErrorsList" class="error-list"></div>
+              </div>
+
+              <button type="button" onclick="goToRegisterScreen()" class="ghost-btn w-full rounded-2xl px-5 py-3 text-sm font-semibold">
+                Register more players
+              </button>
+            </div>
+          </div>
+
+          <div class="message-pill mt-6 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm text-amber-200/90" id="message">
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const BASE_URL = "https://app.forcempower.com/minigolf/api/v4/";
+    const screens = ["registerScreen", "resultScreen"];
+    const ENDPOINTS = {
+      registerPlayers: "register_player.php",
+      assignEquipment: "game_player_equipment.php"
+    };
+
+    let currentGameId = "";
+    let registrationPlayers = [];
+
+    async function postJson(endpoint, payload, contentType = "application/json") {
+      console.log(`[API Request] ${endpoint}`, payload);
+
+      const response = await fetch(BASE_URL + endpoint, {
+        method: "POST",
+        headers: { "Content-Type": contentType },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      console.log(`[API Response] ${endpoint}`, data);
+
+      return data;
+    }
+
+    function setMessage(text, tone = "info") {
+      const message = document.getElementById("message");
+      message.textContent = text || "";
+      message.className = "message-pill mt-6 rounded-2xl border px-4 py-3 text-center text-sm";
+
+      if (!text) {
+        message.classList.add("border-white/10", "bg-white/[0.04]", "text-white/50");
+        return;
+      }
+
+      if (tone === "error") {
+        message.classList.add("border-rose-400/20", "bg-rose-400/10", "text-rose-100");
+        return;
+      }
+
+      if (tone === "success") {
+        message.classList.add("border-emerald-400/20", "bg-emerald-400/10", "text-emerald-100");
+        return;
+      }
+
+      message.classList.add("border-amber-300/20", "bg-amber-300/10", "text-amber-100");
+    }
+
+    function setLoading(buttonId, isLoading, label) {
+      const button = document.getElementById(buttonId);
+      button.disabled = isLoading;
+      button.innerHTML = isLoading
+        ? '<span class="spinner" aria-hidden="true"><span></span><span></span><span></span></span>'
+        : label;
+    }
+
+    function updateSteps(stepIndex) {
+      for (let index = 1; index <= 3; index += 1) {
+        const dot = document.getElementById(`stepDot${index}`);
+        dot.classList.remove("active", "done");
+        if (index < stepIndex) {
+          dot.classList.add("done");
+        } else if (index === stepIndex) {
+          dot.classList.add("active");
+        }
+      }
+    }
+
+    function showScreen(screenId, stepIndex) {
+      screens.forEach((id) => {
+        const screen = document.getElementById(id);
+        screen.classList.remove("is-entering", "is-visible");
+        screen.style.display = "none";
+      });
+
+      const activeScreen = document.getElementById(screenId);
+      activeScreen.style.display = "block";
+      activeScreen.classList.add("is-visible");
+      void activeScreen.offsetWidth;
+      activeScreen.classList.add("is-entering");
+
+      updateSteps(stepIndex);
+    }
+
+    function createPlayerRowMarkup(index) {
+      return `
+        <div class="player-row" data-row-id="${index}">
+          <input
+            type="text"
+            class="field-input"
+            data-player-name
+            placeholder="Player name"
+            autocomplete="name"
+          />
+          <input
+            type="tel"
+            inputmode="numeric"
+            class="field-input"
+            data-player-phone
+            placeholder="Phone number"
+            autocomplete="tel"
+          />
+          <button type="button" class="mini-btn remove-btn" onclick="removePlayerRow(${index})">Remove</button>
+        </div>
+      `;
+    }
+
+    function refreshRemoveButtons() {
+      const rows = document.querySelectorAll("#playersList .player-row");
+      const disableRemove = rows.length <= 1;
+
+      rows.forEach((row) => {
+        const button = row.querySelector(".remove-btn");
+        button.disabled = disableRemove;
+      });
+    }
+
+    function addPlayerRow(seedData = null) {
+      const rows = document.querySelectorAll("#playersList .player-row");
+      const nextId = rows.length + 1;
+      const playersList = document.getElementById("playersList");
+
+      playersList.insertAdjacentHTML("beforeend", createPlayerRowMarkup(nextId));
+
+      const lastRow = playersList.lastElementChild;
+      if (seedData) {
+        const nameInput = lastRow.querySelector("[data-player-name]");
+        const phoneInput = lastRow.querySelector("[data-player-phone]");
+        nameInput.value = seedData.name || "";
+        phoneInput.value = seedData.phone_number || "";
+      }
+
+      refreshRemoveButtons();
+    }
+
+    function removePlayerRow(rowId) {
+      const row = document.querySelector(`[data-row-id="${rowId}"]`);
+      if (!row) {
+        return;
+      }
+
+      row.remove();
+      refreshRemoveButtons();
+    }
+
+    function collectPlayers() {
+      const rows = Array.from(document.querySelectorAll("#playersList .player-row"));
+
+      return rows.map((row) => ({
+        name: row.querySelector("[data-player-name]").value.trim(),
+        phone_number: row.querySelector("[data-player-phone]").value.trim()
+      }));
+    }
+
+    function isValidPhone(phone) {
+      return /^\d{10}$/.test(phone);
+    }
+
+    function renderSummary(summary = {}) {
+      const summaryGrid = document.getElementById("summaryGrid");
+      const cards = [
+        { label: "Total players", value: summary.total_players ?? 0 },
+        { label: "New registrations", value: summary.new_registrations ?? 0 },
+        { label: "Updates", value: summary.updates ?? 0 },
+        { label: "Errors", value: summary.errors ?? 0 }
+      ];
+
+      summaryGrid.innerHTML = cards
+        .map((item) => `
+          <div class="summary-item">
+            <div class="summary-label">${item.label}</div>
+            <div class="summary-value">${item.value}</div>
+          </div>
+        `)
+        .join("");
+    }
+
+    function renderProcessedItems(processed = []) {
+      const processedList = document.getElementById("processedList");
+
+      if (!processed.length) {
+        processedList.innerHTML = `
+          <div class="processed-item">
+            <div class="text-sm text-white/70">No records returned by the API.</div>
+          </div>
+        `;
+        return;
+      }
+
+      processedList.innerHTML = processed
+        .map((item) => {
+          const stateClass = item.error ? "error" : "success";
+          return `
+            <div class="processed-item ${stateClass}">
+              <div class="flex items-center justify-between gap-3">
+                <div class="font-semibold text-white">${item.name || "Unknown"}</div>
+                <div class="text-xs uppercase tracking-[0.12em] text-white/70">${item.status || "processed"}</div>
+              </div>
+              <div class="mt-1 text-sm text-white/80">${item.phone_number || "-"}</div>
+              <div class="mt-2 text-xs text-white/75">${item.message || "Processed"}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function extractGameIdFromRegistration(data) {
+      if (data.game_id) {
+        return String(data.game_id);
+      }
+
+      const firstProcessed = Array.isArray(data.processed)
+        ? data.processed.find((item) => item && (item.game_id || item.group_id))
+        : null;
+
+      if (!firstProcessed) {
+        return "";
+      }
+
+      return String(firstProcessed.game_id || firstProcessed.group_id || "");
+    }
+
+    function renderGameMeta(gameId, count) {
+      const gameIdBadge = document.getElementById("gameIdBadge");
+      const gameMeta = document.getElementById("gameMeta");
+
+      gameIdBadge.textContent = gameId ? `Game ID: ${gameId}` : "Game ID: pending";
+      gameMeta.textContent = gameId
+        ? `Ready to assign equipment for ${count} player${count === 1 ? "" : "s"}.`
+        : "Register players first to auto-fill assignment rows.";
+    }
+
+    function renderAssignmentRows(processed = []) {
+      const assignmentList = document.getElementById("assignmentList");
+
+      if (!processed.length) {
+        assignmentList.innerHTML = `
+          <div class="processed-item">
+            <div class="text-sm text-white/70">No eligible players found for assignment.</div>
+          </div>
+        `;
+        return;
+      }
+
+      assignmentList.innerHTML = processed
+        .map((player, index) => `
+          <div class="assignment-row" data-assignment-row>
+            <div class="min-w-0 rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2">
+              <div class="truncate text-sm font-semibold text-white">${player.name || "Unknown"}</div>
+              <div class="mt-1 text-xs text-white/70">${player.phone_number || "-"}</div>
+            </div>
+            <input
+              type="number"
+              min="1"
+              class="field-input"
+              data-putter-id
+              placeholder="Putter ID"
+              value="${index + 1}"
+            />
+            <input
+              type="number"
+              min="1"
+              class="field-input"
+              data-ball-id
+              placeholder="Ball ID"
+              value="${index + 1}"
+            />
+            <input type="hidden" data-mobile-number value="${player.phone_number || ""}" />
+          </div>
+        `)
+        .join("");
+    }
+
+    function collectAssignments() {
+      const rows = Array.from(document.querySelectorAll("[data-assignment-row]"));
+
+      return rows.map((row) => {
+        const mobileNumber = row.querySelector("[data-mobile-number]").value.trim();
+        const putterId = Number.parseInt(row.querySelector("[data-putter-id]").value, 10);
+        const ballId = Number.parseInt(row.querySelector("[data-ball-id]").value, 10);
+
+        return {
+          mobile_number: mobileNumber,
+          putter_id: putterId,
+          ball_id: ballId
+        };
+      });
+    }
+
+    function renderAssignmentSummary(summary = {}) {
+      const assignmentSummaryGrid = document.getElementById("assignmentSummaryGrid");
+      const cards = [
+        { label: "Total assignments", value: summary.total_assignments ?? 0 },
+        { label: "Successful", value: summary.successful ?? 0 },
+        { label: "Failed", value: summary.failed ?? 0 },
+        { label: "Game ID", value: currentGameId || "-" }
+      ];
+
+      assignmentSummaryGrid.innerHTML = cards
+        .map((item) => `
+          <div class="summary-item">
+            <div class="summary-label">${item.label}</div>
+            <div class="summary-value">${item.value}</div>
+          </div>
+        `)
+        .join("");
+    }
+
+    function renderAssignmentErrors(errors = []) {
+      const assignmentErrorsList = document.getElementById("assignmentErrorsList");
+
+      if (!errors.length) {
+        assignmentErrorsList.innerHTML = `
+          <div class="processed-item success">
+            <div class="text-sm text-white/80">No assignment errors returned.</div>
+          </div>
+        `;
+        return;
+      }
+
+      assignmentErrorsList.innerHTML = errors
+        .map((item) => `
+          <div class="error-item">
+            <div class="text-sm font-semibold text-white">${item.mobile_number || "Unknown mobile"}</div>
+            <div class="mt-1 text-xs text-white/80">${item.message || "Assignment failed"}</div>
+          </div>
+        `)
+        .join("");
+    }
+
+    function goToRegisterScreen() {
+      setMessage("");
+      currentGameId = "";
+      registrationPlayers = [];
+      renderAssignmentRows([]);
+      renderGameMeta("", 0);
+      renderAssignmentSummary({});
+      renderAssignmentErrors([]);
+      showScreen("registerScreen", 1);
+    }
+
+    async function registerPlayers() {
+      const players = collectPlayers();
+
+      if (!players.length) {
+        setMessage("Add at least one player.", "error");
+        return;
+      }
+
+      const hasMissingName = players.some((player) => !player.name);
+      if (hasMissingName) {
+        setMessage("Each player must have a name.", "error");
+        return;
+      }
+
+      const hasInvalidPhone = players.some((player) => !isValidPhone(player.phone_number));
+      if (hasInvalidPhone) {
+        setMessage("Phone number must be exactly 10 digits for each player.", "error");
+        return;
+      }
+
+      const payload = { players };
+      setMessage("Registering players...");
+      setLoading("registerBtn", true, "Register Players");
+
+      try {
+        const data = await postJson(ENDPOINTS.registerPlayers, payload);
+
+        currentGameId = extractGameIdFromRegistration(data);
+        registrationPlayers = Array.isArray(data.processed)
+          ? data.processed.filter((item) => item && item.success && !item.error && item.phone_number)
+          : [];
+
+        renderSummary(data.summary || {});
+        renderProcessedItems(data.processed || []);
+        renderGameMeta(currentGameId, registrationPlayers.length);
+        renderAssignmentRows(registrationPlayers);
+        renderAssignmentSummary({
+          total_assignments: registrationPlayers.length,
+          successful: 0,
+          failed: 0
+        });
+        renderAssignmentErrors([]);
+        showScreen("resultScreen", 2);
+
+        if (data.error || data.success === false) {
+          setMessage(data.message || "Some entries were not processed.", "error");
+          return;
+        }
+
+        if (!currentGameId) {
+          setMessage("Players registered, but game_id was missing in response.", "error");
+          return;
+        }
+
+        setMessage("Players registered. Add putter and ball IDs, then assign equipment.", "success");
+      } catch (error) {
+        console.error("[API Error] register_player.php", error);
+        setMessage("Network error. Please try again.", "error");
+      } finally {
+        setLoading("registerBtn", false, "Register Players");
+      }
+    }
+
+    async function assignEquipment() {
+      if (!currentGameId) {
+        setMessage("game_id not found. Register players again.", "error");
+        return;
+      }
+
+      const assignments = collectAssignments();
+      if (!assignments.length) {
+        setMessage("No assignments available. Register players first.", "error");
+        return;
+      }
+
+      const invalidEntry = assignments.find((item) => {
+        const invalidPhone = !isValidPhone(item.mobile_number);
+        const invalidPutter = !Number.isInteger(item.putter_id) || item.putter_id < 1;
+        const invalidBall = !Number.isInteger(item.ball_id) || item.ball_id < 1;
+        return invalidPhone || invalidPutter || invalidBall;
+      });
+
+      if (invalidEntry) {
+        setMessage("Each assignment needs valid mobile, putter ID, and ball ID.", "error");
+        return;
+      }
+
+      const payload = {
+        game_id: currentGameId,
+        assignments
+      };
+
+      setMessage("Assigning putter and ball...");
+      setLoading("assignBtn", true, "Assign Putter and Ball");
+
+      try {
+        const data = await postJson(ENDPOINTS.assignEquipment, payload, "text/plain");
+        renderAssignmentSummary(data.summary || {});
+        renderAssignmentErrors(data.errors || []);
+        updateSteps(3);
+
+        const failedCount = data.summary?.failed ?? 0;
+        if (data.error || data.success === false || failedCount > 0) {
+          setMessage("Assignment completed with some failures. Check error list.", "error");
+          return;
+        }
+
+        setMessage("Equipment assigned successfully for all players.", "success");
+      } catch (error) {
+        console.error("[API Error] game_player_equipment.php", error);
+        setMessage("Network error while assigning equipment.", "error");
+      } finally {
+        setLoading("assignBtn", false, "Assign Putter and Ball");
+      }
+    }
+
+    setMessage("");
+    renderGameMeta("", 0);
+    renderAssignmentRows([]);
+    renderAssignmentSummary({});
+    renderAssignmentErrors([]);
+    showScreen("registerScreen", 1);
+    addPlayerRow({ name: "", phone_number: "" });
+  </script>
+</body>
+</html>
