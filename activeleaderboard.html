@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Active Leaderboard</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700&display=swap"
+		rel="stylesheet"
+	/>
+	<style>
+		:root {
+			--bg-main: #090b12;
+			--bg-panel: rgba(14, 19, 34, 0.72);
+			--bg-chip: rgba(255, 255, 255, 0.08);
+			--text-main: #f3f8ff;
+			--text-muted: #9ab0cc;
+			--accent-a: #00e5ff;
+			--accent-b: #00ff85;
+			--accent-c: #ffc857;
+			--danger: #ff6f7d;
+			--shadow-glow: 0 20px 60px rgba(0, 229, 255, 0.2);
+			--border-light: rgba(255, 255, 255, 0.14);
+			--radius-lg: 24px;
+			--radius-md: 14px;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			color: var(--text-main);
+			font-family: "Space Grotesk", sans-serif;
+			background:
+				radial-gradient(circle at 12% 15%, rgba(0, 229, 255, 0.2), transparent 34%),
+				radial-gradient(circle at 88% 12%, rgba(0, 255, 133, 0.18), transparent 36%),
+				radial-gradient(circle at 50% 88%, rgba(255, 200, 87, 0.12), transparent 38%),
+				linear-gradient(135deg, #06070d 0%, #0a1020 48%, #0f0d18 100%);
+			overflow-x: hidden;
+		}
+
+		.orb {
+			position: fixed;
+			width: 360px;
+			height: 360px;
+			border-radius: 50%;
+			filter: blur(80px);
+			opacity: 0.3;
+			z-index: 0;
+			pointer-events: none;
+			animation: drift 16s ease-in-out infinite;
+		}
+
+		.orb-one {
+			background: #00e5ff;
+			top: -90px;
+			left: -110px;
+		}
+
+		.orb-two {
+			background: #00ff85;
+			right: -120px;
+			top: 35%;
+			animation-delay: -5s;
+		}
+
+		.orb-three {
+			background: #ffc857;
+			bottom: -120px;
+			left: 28%;
+			animation-delay: -9s;
+		}
+
+		.app {
+			position: relative;
+			z-index: 1;
+			width: min(1120px, 94vw);
+			margin: 38px auto;
+			display: grid;
+			gap: 20px;
+			animation: rise 700ms ease-out;
+		}
+
+		.hero {
+			background: var(--bg-panel);
+			border: 1px solid var(--border-light);
+			border-radius: var(--radius-lg);
+			backdrop-filter: blur(18px);
+			box-shadow: var(--shadow-glow);
+			padding: 28px;
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 18px;
+			flex-wrap: wrap;
+		}
+
+		.title {
+			margin: 0;
+			font-family: "Sora", sans-serif;
+			font-size: clamp(1.7rem, 4vw, 2.8rem);
+			letter-spacing: 0.02em;
+			line-height: 1.08;
+		}
+
+		.subtitle {
+			margin: 8px 0 0;
+			color: var(--text-muted);
+			font-size: 1rem;
+		}
+
+		.stats {
+			display: flex;
+			gap: 10px;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+		}
+
+		.chip {
+			background: var(--bg-chip);
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			border-radius: 999px;
+			padding: 10px 14px;
+			font-size: 0.88rem;
+			color: #d5e8ff;
+			white-space: nowrap;
+		}
+
+		.main-panel {
+			background: var(--bg-panel);
+			border: 1px solid var(--border-light);
+			border-radius: var(--radius-lg);
+			backdrop-filter: blur(16px);
+			padding: 16px;
+			overflow: hidden;
+		}
+
+		.state {
+			padding: 40px 20px;
+			text-align: center;
+			color: var(--text-muted);
+			font-size: 1rem;
+		}
+
+		.state.error {
+			color: var(--danger);
+		}
+
+		.leader-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+			gap: 14px;
+			margin-bottom: 18px;
+		}
+
+		.leader-card {
+			border: 1px solid rgba(255, 255, 255, 0.14);
+			border-radius: var(--radius-md);
+			background: linear-gradient(150deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+			padding: 14px;
+			position: relative;
+			overflow: hidden;
+			transform: translateY(10px);
+			opacity: 0;
+			animation: reveal 520ms ease forwards;
+		}
+
+		.leader-card::after {
+			content: "";
+			position: absolute;
+			inset: auto -20% -44% 12%;
+			height: 140px;
+			border-radius: 50%;
+			background: radial-gradient(circle, rgba(0, 229, 255, 0.22) 0%, transparent 70%);
+			pointer-events: none;
+		}
+
+		.leader-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 10px;
+			margin-bottom: 10px;
+		}
+
+		.rank-badge {
+			min-width: 38px;
+			height: 38px;
+			border-radius: 50%;
+			display: grid;
+			place-items: center;
+			font-weight: 700;
+			color: #041018;
+			background: linear-gradient(145deg, var(--accent-a), var(--accent-b));
+		}
+
+		.player-name {
+			margin: 0;
+			font-size: 1.1rem;
+			font-weight: 700;
+			line-height: 1.3;
+		}
+
+		.muted {
+			color: var(--text-muted);
+			font-size: 0.86rem;
+		}
+
+		.score-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 10px;
+			margin-top: 8px;
+			font-size: 0.92rem;
+		}
+
+		.score-pill {
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			border-radius: 999px;
+			padding: 5px 10px;
+			font-size: 0.8rem;
+			color: #dff8ff;
+			background: rgba(0, 0, 0, 0.2);
+		}
+
+		.table-wrap {
+			overflow: auto;
+			border-radius: 12px;
+			border: 1px solid rgba(255, 255, 255, 0.14);
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			min-width: 720px;
+			font-size: 0.95rem;
+		}
+
+		th,
+		td {
+			padding: 12px 14px;
+			text-align: left;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+		}
+
+		th {
+			color: #b7d0ec;
+			font-size: 0.8rem;
+			text-transform: uppercase;
+			letter-spacing: 0.09em;
+			background: rgba(0, 0, 0, 0.26);
+		}
+
+		tbody tr:hover {
+			background: rgba(255, 255, 255, 0.06);
+		}
+
+		.refresh-btn {
+			border: 0;
+			border-radius: 10px;
+			padding: 10px 14px;
+			font-family: inherit;
+			font-weight: 600;
+			color: #001117;
+			background: linear-gradient(140deg, var(--accent-a), var(--accent-b));
+			cursor: pointer;
+			transition: transform 160ms ease, box-shadow 160ms ease;
+			box-shadow: 0 12px 24px rgba(0, 229, 255, 0.2);
+		}
+
+		.refresh-btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 14px 26px rgba(0, 229, 255, 0.26);
+		}
+
+		.refresh-btn:active {
+			transform: translateY(0);
+		}
+
+		@keyframes drift {
+			0%,
+			100% {
+				transform: translate(0, 0) scale(1);
+			}
+			50% {
+				transform: translate(28px, -24px) scale(1.06);
+			}
+		}
+
+		@keyframes rise {
+			from {
+				transform: translateY(14px);
+				opacity: 0;
+			}
+			to {
+				transform: translateY(0);
+				opacity: 1;
+			}
+		}
+
+		@keyframes reveal {
+			to {
+				transform: translateY(0);
+				opacity: 1;
+			}
+		}
+
+		@media (max-width: 740px) {
+			.app {
+				margin: 20px auto;
+			}
+
+			.hero {
+				padding: 18px;
+			}
+
+			.main-panel {
+				padding: 12px;
+			}
+
+			.chip {
+				font-size: 0.8rem;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="orb orb-one"></div>
+	<div class="orb orb-two"></div>
+	<div class="orb orb-three"></div>
+
+	<main class="app">
+		<section class="hero">
+			<div>
+				<h1 class="title">Active Mini Golf Leaderboard</h1>
+			</div>
+			<div class="stats">
+				<span id="countChip" class="chip">Players: 0</span>
+				<span id="lastSyncChip" class="chip">Last Sync: --</span>
+				<button id="refreshBtn" class="refresh-btn" type="button">Refresh</button>
+			</div>
+		</section>
+
+		<section class="main-panel">
+			<div id="state" class="state">Loading active leaderboard...</div>
+			<div id="content" hidden>
+				<div id="leaderGrid" class="leader-grid"></div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>Rank</th>
+								<th>Name</th>
+								<th>Player ID</th>
+								<th>Game ID</th>
+								<th>Ball ID</th>
+								<th>Current Hole</th>
+								<th>Strokes</th>
+								<th>Session Start</th>
+							</tr>
+						</thead>
+						<tbody id="leaderTableBody"></tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		const API_URL = "https://app.forcempower.com/minigolf/api/v4/active_leaderboard.php";
+		const REFRESH_MS = 30000;
+
+		const stateEl = document.getElementById("state");
+		const contentEl = document.getElementById("content");
+		const countChipEl = document.getElementById("countChip");
+		const lastSyncChipEl = document.getElementById("lastSyncChip");
+		const gridEl = document.getElementById("leaderGrid");
+		const tableBodyEl = document.getElementById("leaderTableBody");
+		const refreshBtnEl = document.getElementById("refreshBtn");
+
+		function safeText(value, fallback = "-") {
+			return value === null || value === undefined || value === "" ? fallback : String(value);
+		}
+
+		function parseHoleValue(hole) {
+			return hole === null || hole === undefined || hole === "" ? "Not started" : safeText(hole);
+		}
+
+		function formatTime(timeString) {
+			if (!timeString) {
+				return "-";
+			}
+			const normalized = String(timeString).replace(" ", "T");
+			const date = new Date(normalized);
+			if (Number.isNaN(date.getTime())) {
+				return safeText(timeString);
+			}
+			return date.toLocaleTimeString([], {
+				hour: "numeric",
+				minute: "2-digit",
+				hour12: true
+			});
+		}
+
+		function setState(message, isError = false) {
+			stateEl.hidden = false;
+			contentEl.hidden = true;
+			stateEl.textContent = message;
+			stateEl.classList.toggle("error", isError);
+		}
+
+		function renderLeaderboard(players) {
+			gridEl.innerHTML = "";
+			tableBodyEl.innerHTML = "";
+
+			if (!players.length) {
+				setState("No active players right now.");
+				countChipEl.textContent = "Players: 0";
+				return;
+			}
+
+			const sortedPlayers = [...players].sort((a, b) => {
+				const strokesA = Number(a.current_strokes);
+				const strokesB = Number(b.current_strokes);
+
+				// Stroke value 0 means the player has not started yet.
+				const safeStrokesA = Number.isFinite(strokesA) && strokesA > 0 ? strokesA : Number.POSITIVE_INFINITY;
+				const safeStrokesB = Number.isFinite(strokesB) && strokesB > 0 ? strokesB : Number.POSITIVE_INFINITY;
+
+				if (safeStrokesA !== safeStrokesB) {
+					return safeStrokesA - safeStrokesB;
+				}
+
+				const holeA = Number(a.current_hole);
+				const holeB = Number(b.current_hole);
+				const safeHoleA = Number.isFinite(holeA) ? holeA : Number.NEGATIVE_INFINITY;
+				const safeHoleB = Number.isFinite(holeB) ? holeB : Number.NEGATIVE_INFINITY;
+
+				if (safeHoleA !== safeHoleB) {
+					return safeHoleB - safeHoleA;
+				}
+
+				return safeText(a.name, "").localeCompare(safeText(b.name, ""));
+			});
+
+			sortedPlayers.forEach((player, index) => {
+				const rank = index + 1;
+				const holeText = parseHoleValue(player.current_hole);
+				const strokes = Number(player.current_strokes) || 0;
+				const strokeDisplay = strokes === 0 ? "Not Started" : String(strokes);
+
+				const card = document.createElement("article");
+				card.className = "leader-card";
+				card.style.animationDelay = `${Math.min(index * 70, 420)}ms`;
+				card.innerHTML = `
+					<div class="leader-head">
+						<span class="rank-badge">#${rank}</span>
+						<span class="score-pill">Ball ${safeText(player.ball_id)}</span>
+					</div>
+					<h3 class="player-name">${safeText(player.name, "Unknown Player")}</h3>
+					<div class="score-row">
+						<span class="muted">Current Hole</span>
+						<strong>${holeText}</strong>
+					</div>
+					<div class="score-row">
+						<span class="muted">Strokes</span>
+						<strong>${strokeDisplay}</strong>
+					</div>
+				`;
+				gridEl.appendChild(card);
+
+				const row = document.createElement("tr");
+				row.innerHTML = `
+					<td>#${rank}</td>
+					<td>${safeText(player.name, "Unknown Player")}</td>
+					<td>${safeText(player.player_id)}</td>
+					<td>${safeText(player.game_id)}</td>
+					<td>${safeText(player.ball_id)}</td>
+					<td>${holeText}</td>
+					<td>${strokeDisplay}</td>
+					<td>${formatTime(player.session_start_time)}</td>
+				`;
+				tableBodyEl.appendChild(row);
+			});
+
+			countChipEl.textContent = `Players: ${sortedPlayers.length}`;
+			lastSyncChipEl.textContent = `Last Sync: ${new Date().toLocaleTimeString()}`;
+			stateEl.hidden = true;
+			contentEl.hidden = false;
+		}
+
+		async function loadLeaderboard() {
+			setState("Loading active leaderboard...");
+
+			try {
+				const response = await fetch(API_URL, {
+					method: "GET",
+					headers: {
+						Accept: "application/json"
+					},
+					cache: "no-store"
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}`);
+				}
+
+				const payload = await response.json();
+				const players = Array.isArray(payload.data) ? payload.data : [];
+
+				renderLeaderboard(players);
+			} catch (error) {
+				console.error("Failed to fetch active leaderboard:", error);
+				setState("Could not load leaderboard. Check API connectivity and CORS settings.", true);
+			}
+		}
+
+		refreshBtnEl.addEventListener("click", loadLeaderboard);
+		loadLeaderboard();
+		window.setInterval(loadLeaderboard, REFRESH_MS);
+	</script>
+</body>
+</html>
