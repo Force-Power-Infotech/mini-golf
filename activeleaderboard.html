@@ -357,8 +357,6 @@
 							<tr>
 								<th>Rank</th>
 								<th>Name</th>
-								<th>Player ID</th>
-								<th>Game ID</th>
 								<th>Ball ID</th>
 								<th>Current Hole</th>
 								<th>Strokes</th>
@@ -449,7 +447,10 @@
 				return safeText(a.name, "").localeCompare(safeText(b.name, ""));
 			});
 
-			sortedPlayers.forEach((player, index) => {
+			const topPlayers = sortedPlayers.slice(0, 3);
+			const remainingPlayers = sortedPlayers.slice(3);
+
+			topPlayers.forEach((player, index) => {
 				const rank = index + 1;
 				const holeText = parseHoleValue(player.current_hole);
 				const strokes = Number(player.current_strokes) || 0;
@@ -475,12 +476,18 @@
 				`;
 				gridEl.appendChild(card);
 
+			});
+
+			remainingPlayers.forEach((player, index) => {
+				const rank = index + 4;
+				const holeText = parseHoleValue(player.current_hole);
+				const strokes = Number(player.current_strokes) || 0;
+				const strokeDisplay = strokes === 0 ? "Not Started" : String(strokes);
+
 				const row = document.createElement("tr");
 				row.innerHTML = `
 					<td>#${rank}</td>
 					<td>${safeText(player.name, "Unknown Player")}</td>
-					<td>${safeText(player.player_id)}</td>
-					<td>${safeText(player.game_id)}</td>
 					<td>${safeText(player.ball_id)}</td>
 					<td>${holeText}</td>
 					<td>${strokeDisplay}</td>

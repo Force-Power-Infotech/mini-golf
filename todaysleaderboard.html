@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Today's Leaderboard</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@500;600;700&display=swap"
+		rel="stylesheet"
+	/>
+	<style>
+		:root {
+			--bg-a: #fff9f1;
+			--bg-b: #fff1da;
+			--bg-c: #f3f9e7;
+			--ink: #1a1f16;
+			--muted: #647063;
+			--panel: rgba(255, 255, 255, 0.7);
+			--line: rgba(26, 31, 22, 0.12);
+			--accent-green: #9cf447;
+			--accent-orange: #ff9d38;
+			--accent-blue: #2fd5ff;
+			--danger: #dd4f4f;
+			--radius-xl: 30px;
+			--radius-lg: 20px;
+			--shadow: 0 20px 40px rgba(78, 96, 49, 0.12);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: "Outfit", sans-serif;
+			color: var(--ink);
+			background:
+				radial-gradient(circle at 14% 18%, rgba(255, 157, 56, 0.22), transparent 32%),
+				radial-gradient(circle at 84% 12%, rgba(47, 213, 255, 0.2), transparent 34%),
+				radial-gradient(circle at 50% 92%, rgba(156, 244, 71, 0.2), transparent 30%),
+				linear-gradient(130deg, var(--bg-a), var(--bg-b) 48%, var(--bg-c));
+			overflow-x: hidden;
+		}
+
+		.backdrop-ring {
+			position: fixed;
+			width: 420px;
+			height: 420px;
+			border-radius: 50%;
+			border: 42px solid rgba(26, 31, 22, 0.05);
+			filter: blur(0.2px);
+			pointer-events: none;
+			z-index: 0;
+			animation: floaty 13s ease-in-out infinite;
+		}
+
+		.ring-one {
+			top: -140px;
+			left: -130px;
+		}
+
+		.ring-two {
+			bottom: -190px;
+			right: -120px;
+			animation-delay: -6s;
+		}
+
+		.container {
+			position: relative;
+			z-index: 1;
+			width: min(1120px, 94vw);
+			margin: 34px auto;
+			display: grid;
+			gap: 18px;
+			animation: entrance 560ms ease;
+		}
+
+		.hero {
+			position: relative;
+			padding: 26px;
+			border: 1px solid var(--line);
+			border-radius: var(--radius-xl);
+			background: var(--panel);
+			backdrop-filter: blur(10px);
+			box-shadow: var(--shadow);
+			overflow: hidden;
+		}
+
+		.hero::before {
+			content: "";
+			position: absolute;
+			inset: auto -26% -58% 44%;
+			height: 240px;
+			background: radial-gradient(circle, rgba(156, 244, 71, 0.45), transparent 70%);
+			pointer-events: none;
+		}
+
+		.hero-top {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 18px;
+			flex-wrap: wrap;
+		}
+
+		.title {
+			margin: 0;
+			font-size: clamp(1.7rem, 4vw, 3rem);
+			line-height: 1.02;
+			letter-spacing: -0.02em;
+			font-weight: 800;
+		}
+
+		.subtitle {
+			margin: 8px 0 0;
+			font-size: 1rem;
+			color: var(--muted);
+			max-width: 68ch;
+		}
+
+		.hero-actions {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+			flex-wrap: wrap;
+		}
+
+		.chip {
+			padding: 10px 12px;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			font-weight: 600;
+			font-size: 0.84rem;
+			background: rgba(255, 255, 255, 0.7);
+			white-space: nowrap;
+		}
+
+		.refresh-btn {
+			border: 0;
+			padding: 10px 14px;
+			border-radius: 12px;
+			font-family: "Manrope", sans-serif;
+			font-weight: 700;
+			font-size: 0.9rem;
+			color: #ffffff;
+			background: linear-gradient(120deg, #192309, #2e4d0b 45%, #466e0d);
+			box-shadow: 0 12px 20px rgba(40, 62, 11, 0.28);
+			cursor: pointer;
+			transition: transform 130ms ease, box-shadow 130ms ease;
+		}
+
+		.refresh-btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 14px 24px rgba(40, 62, 11, 0.34);
+		}
+
+		.refresh-btn:active {
+			transform: translateY(0);
+		}
+
+		.panel {
+			padding: 16px;
+			border: 1px solid var(--line);
+			border-radius: var(--radius-xl);
+			background: var(--panel);
+			backdrop-filter: blur(8px);
+			box-shadow: var(--shadow);
+		}
+
+		.state {
+			padding: 48px 16px;
+			text-align: center;
+			font-size: 1rem;
+			color: var(--muted);
+		}
+
+		.state.error {
+			color: var(--danger);
+		}
+
+		.podium {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+			gap: 12px;
+			margin-bottom: 16px;
+		}
+
+		.podium-card {
+			position: relative;
+			padding: 14px;
+			border-radius: var(--radius-lg);
+			border: 1px solid var(--line);
+			background: linear-gradient(140deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.55));
+			overflow: hidden;
+			opacity: 0;
+			transform: translateY(10px);
+			animation: reveal 500ms ease forwards;
+		}
+
+		.podium-card::after {
+			content: "";
+			position: absolute;
+			inset: auto -18% -64% 24%;
+			height: 180px;
+			border-radius: 50%;
+			pointer-events: none;
+			background: radial-gradient(circle, rgba(47, 213, 255, 0.28), transparent 70%);
+		}
+
+		.podium-card.rank-1::after {
+			background: radial-gradient(circle, rgba(156, 244, 71, 0.35), transparent 70%);
+		}
+
+		.podium-head {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 8px;
+			margin-bottom: 8px;
+		}
+
+		.place {
+			display: inline-grid;
+			place-items: center;
+			width: 34px;
+			height: 34px;
+			border-radius: 50%;
+			font-weight: 800;
+			font-size: 0.86rem;
+			border: 1px solid rgba(26, 31, 22, 0.18);
+			background: #ffffff;
+		}
+
+		.name {
+			margin: 0;
+			font-size: 1.08rem;
+			line-height: 1.24;
+			font-weight: 700;
+		}
+
+		.meta {
+			margin-top: 8px;
+			display: grid;
+			gap: 6px;
+		}
+
+		.row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 8px;
+			font-size: 0.9rem;
+		}
+
+		.row .label {
+			color: var(--muted);
+		}
+
+		.stroke-pill {
+			padding: 6px 10px;
+			border-radius: 999px;
+			font-size: 0.8rem;
+			font-weight: 700;
+			background: rgba(26, 31, 22, 0.08);
+			border: 1px solid rgba(26, 31, 22, 0.14);
+		}
+
+		.table-wrap {
+			overflow: auto;
+			border-radius: 14px;
+			border: 1px solid var(--line);
+		}
+
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			min-width: 720px;
+			font-size: 0.95rem;
+		}
+
+		th,
+		td {
+			padding: 12px 14px;
+			text-align: left;
+			border-bottom: 1px solid rgba(26, 31, 22, 0.1);
+		}
+
+		th {
+			font-size: 0.78rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.07em;
+			background: rgba(255, 255, 255, 0.82);
+			color: #4f5a4c;
+		}
+
+		tbody tr:hover {
+			background: rgba(255, 255, 255, 0.48);
+		}
+
+		@keyframes reveal {
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@keyframes entrance {
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@keyframes floaty {
+			0%,
+			100% {
+				transform: translate(0, 0) rotate(0deg);
+			}
+			50% {
+				transform: translate(20px, -14px) rotate(5deg);
+			}
+		}
+
+		@media (max-width: 760px) {
+			.container {
+				margin: 18px auto;
+			}
+
+			.hero,
+			.panel {
+				padding: 14px;
+			}
+
+			.subtitle {
+				font-size: 0.93rem;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="backdrop-ring ring-one"></div>
+	<div class="backdrop-ring ring-two"></div>
+
+	<main class="container">
+		<section class="hero">
+			<div class="hero-top">
+				<div>
+					<h1 class="title">Today's Mini Golf Leaderboard</h1>
+					<p class="subtitle">Live daily rankings sorted by total strokes. Lower score means better position on the board.</p>
+				</div>
+				<div class="hero-actions">
+					<span id="countChip" class="chip">Players: 0</span>
+					<span id="syncChip" class="chip">Last Sync: --</span>
+					<button id="refreshBtn" class="refresh-btn" type="button">Refresh</button>
+				</div>
+			</div>
+		</section>
+
+		<section class="panel">
+			<div id="state" class="state">Loading today's leaderboard...</div>
+			<div id="content" hidden>
+				<div id="podium" class="podium"></div>
+				<div class="table-wrap">
+					<table>
+						<thead>
+							<tr>
+								<th>Rank</th>
+								<th>Name</th>
+								<th>Total Strokes</th>
+								<th>Player ID</th>
+								<th>Game ID</th>
+								<th>Created At</th>
+							</tr>
+						</thead>
+						<tbody id="tableBody"></tbody>
+					</table>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		const API_URL = "https://app.forcempower.com/minigolf/api/v4/todays_leaderboard.php";
+		const REFRESH_MS = 30000;
+
+		const stateEl = document.getElementById("state");
+		const contentEl = document.getElementById("content");
+		const countChipEl = document.getElementById("countChip");
+		const syncChipEl = document.getElementById("syncChip");
+		const podiumEl = document.getElementById("podium");
+		const tableBodyEl = document.getElementById("tableBody");
+		const refreshBtnEl = document.getElementById("refreshBtn");
+
+		function safeText(value, fallback = "-") {
+			return value === null || value === undefined || value === "" ? fallback : String(value);
+		}
+
+		function parseStroke(value) {
+			const num = Number(value);
+			return Number.isFinite(num) ? num : Number.POSITIVE_INFINITY;
+		}
+
+		function formatDateTime(value) {
+			if (!value) {
+				return "-";
+			}
+
+			const normalized = String(value).replace(" ", "T");
+			const date = new Date(normalized);
+			if (Number.isNaN(date.getTime())) {
+				return safeText(value);
+			}
+
+			return date.toLocaleString([], {
+				year: "numeric",
+				month: "short",
+				day: "numeric",
+				hour: "numeric",
+				minute: "2-digit",
+				hour12: true
+			});
+		}
+
+		function setState(message, isError = false) {
+			stateEl.hidden = false;
+			contentEl.hidden = true;
+			stateEl.textContent = message;
+			stateEl.classList.toggle("error", isError);
+		}
+
+		function renderPlayers(players) {
+			podiumEl.innerHTML = "";
+			tableBodyEl.innerHTML = "";
+
+			if (!players.length) {
+				setState("No entries available for today's leaderboard.");
+				countChipEl.textContent = "Players: 0";
+				return;
+			}
+
+			const ranked = [...players].sort((a, b) => {
+				const strokeDiff = parseStroke(a.total_strokes) - parseStroke(b.total_strokes);
+				if (strokeDiff !== 0) {
+					return strokeDiff;
+				}
+
+				const dateA = new Date(String(a.create_date || "").replace(" ", "T")).getTime();
+				const dateB = new Date(String(b.create_date || "").replace(" ", "T")).getTime();
+				if (Number.isFinite(dateA) && Number.isFinite(dateB) && dateA !== dateB) {
+					return dateA - dateB;
+				}
+
+				return safeText(a.name, "").localeCompare(safeText(b.name, ""));
+			});
+
+			ranked.forEach((player, index) => {
+				const rank = index + 1;
+				const strokeNum = Number(player.total_strokes);
+				const strokeText = Number.isFinite(strokeNum) ? String(strokeNum) : "-";
+
+				const card = document.createElement("article");
+				card.className = `podium-card rank-${rank}`;
+				card.style.animationDelay = `${Math.min(index * 80, 420)}ms`;
+				card.innerHTML = `
+					<div class="podium-head">
+						<span class="place">#${rank}</span>
+						<span class="stroke-pill">${strokeText} strokes</span>
+					</div>
+					<h3 class="name">${safeText(player.name, "Unknown Player")}</h3>
+					<div class="meta">
+						<div class="row">
+							<span class="label">Player ID</span>
+							<strong>${safeText(player.player_id)}</strong>
+						</div>
+						<div class="row">
+							<span class="label">Game ID</span>
+							<strong>${safeText(player.game_id)}</strong>
+						</div>
+					</div>
+				`;
+				podiumEl.appendChild(card);
+
+				const row = document.createElement("tr");
+				row.innerHTML = `
+					<td>#${rank}</td>
+					<td>${safeText(player.name, "Unknown Player")}</td>
+					<td>${strokeText}</td>
+					<td>${safeText(player.player_id)}</td>
+					<td>${safeText(player.game_id)}</td>
+					<td>${formatDateTime(player.create_date)}</td>
+				`;
+				tableBodyEl.appendChild(row);
+			});
+
+			countChipEl.textContent = `Players: ${ranked.length}`;
+			syncChipEl.textContent = `Last Sync: ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit", hour12: true })}`;
+			stateEl.hidden = true;
+			contentEl.hidden = false;
+		}
+
+		async function loadLeaderboard() {
+			setState("Loading today's leaderboard...");
+
+			try {
+				const response = await fetch(API_URL, {
+					method: "GET",
+					headers: {
+						Accept: "application/json"
+					},
+					cache: "no-store"
+				});
+
+				if (!response.ok) {
+					throw new Error(`HTTP ${response.status}`);
+				}
+
+				const payload = await response.json();
+				if (!payload || payload.success !== true) {
+					throw new Error("API success flag is false");
+				}
+
+				const players = Array.isArray(payload.data) ? payload.data : [];
+				renderPlayers(players);
+			} catch (error) {
+				console.error("Failed to fetch today's leaderboard:", error);
+				setState("Could not load today's leaderboard. Please verify API connectivity and CORS settings.", true);
+			}
+		}
+
+		refreshBtnEl.addEventListener("click", loadLeaderboard);
+		loadLeaderboard();
+		window.setInterval(loadLeaderboard, REFRESH_MS);
+	</script>
+</body>
+</html>
