@@ -1021,14 +1021,18 @@
 
       const payload = {
         game_id: currentGameId,
-        assignments
+        assignments: assignments.map((item) => ({
+          mobile_number: item.mobile_number,
+          putter_id: String(item.putter_id),
+          ball_id: String(item.ball_id)
+        }))
       };
 
       setMessage("Assigning putter and ball...");
       setLoading("assignBtn", true, "Assign Putter and Ball");
 
       try {
-        const data = await postJson(ENDPOINTS.assignEquipment, payload, "text/plain");
+        const data = await postJson(ENDPOINTS.assignEquipment, payload);
         renderAssignmentSummary(data.summary || {});
         renderAssignmentErrors(data.errors || []);
         updateSteps(3);

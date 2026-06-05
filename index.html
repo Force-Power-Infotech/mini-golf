@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="theme-color" content="#071018" />
+	<title>Mini Golf Hub</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--bg-0: #04070f;
+			--bg-1: #07111d;
+			--bg-2: #0d1626;
+			--panel: rgba(9, 16, 28, 0.72);
+			--panel-strong: rgba(12, 20, 35, 0.88);
+			--line: rgba(255, 255, 255, 0.11);
+			--text-main: #f5fbff;
+			--text-muted: #a7bbd4;
+			--accent-a: #22d3ee;
+			--accent-b: #7cffa8;
+			--accent-c: #ffd166;
+			--accent-d: #7aa7ff;
+			--shadow: 0 28px 80px rgba(0, 0, 0, 0.4);
+			--radius-xl: 30px;
+			--radius-lg: 22px;
+			--radius-md: 16px;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: "Outfit", sans-serif;
+			color: var(--text-main);
+			background:
+				radial-gradient(circle at 14% 14%, rgba(34, 211, 238, 0.2), transparent 30%),
+				radial-gradient(circle at 84% 18%, rgba(124, 255, 168, 0.16), transparent 28%),
+				radial-gradient(circle at 52% 92%, rgba(255, 209, 102, 0.14), transparent 32%),
+				linear-gradient(140deg, var(--bg-0) 0%, var(--bg-1) 44%, var(--bg-2) 100%);
+			overflow-x: hidden;
+		}
+
+		.noise {
+			position: fixed;
+			inset: 0;
+			pointer-events: none;
+			opacity: 0.18;
+			background-image: radial-gradient(rgba(255, 255, 255, 0.08) 0.45px, transparent 0.45px);
+			background-size: 4px 4px;
+			z-index: 0;
+		}
+
+		.orb {
+			position: fixed;
+			width: 380px;
+			height: 380px;
+			border-radius: 50%;
+			filter: blur(90px);
+			opacity: 0.28;
+			pointer-events: none;
+			z-index: 0;
+			animation: drift 18s ease-in-out infinite;
+		}
+
+		.orb.one {
+			background: #22d3ee;
+			top: -120px;
+			left: -120px;
+		}
+
+		.orb.two {
+			background: #7cffa8;
+			top: 26%;
+			right: -140px;
+			animation-delay: -6s;
+		}
+
+		.orb.three {
+			background: #ffd166;
+			bottom: -140px;
+			left: 28%;
+			animation-delay: -11s;
+		}
+
+		.shell {
+			position: relative;
+			z-index: 1;
+			width: min(1180px, 94vw);
+			margin: 0 auto;
+			padding: 28px 0 36px;
+			display: grid;
+			gap: 18px;
+			animation: rise 700ms ease-out;
+		}
+
+		.hero {
+			position: relative;
+			padding: 28px;
+			border-radius: var(--radius-xl);
+			border: 1px solid var(--line);
+			background: linear-gradient(180deg, rgba(18, 27, 44, 0.86), rgba(9, 16, 28, 0.72));
+			backdrop-filter: blur(18px);
+			box-shadow: var(--shadow);
+			overflow: hidden;
+		}
+
+		.hero::after {
+			content: "";
+			position: absolute;
+			inset: auto -16% -48% auto;
+			width: 300px;
+			height: 300px;
+			border-radius: 50%;
+			background: radial-gradient(circle, rgba(34, 211, 238, 0.22), transparent 68%);
+			pointer-events: none;
+		}
+
+		.topline {
+			display: flex;
+			justify-content: space-between;
+			gap: 16px;
+			align-items: flex-start;
+			flex-wrap: wrap;
+		}
+
+		.kicker {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			padding: 9px 14px;
+			border-radius: 999px;
+			border: 1px solid rgba(124, 255, 168, 0.22);
+			background: rgba(124, 255, 168, 0.08);
+			color: #dfffea;
+			font-size: 0.86rem;
+			font-weight: 700;
+			letter-spacing: 0.02em;
+		}
+
+		.kicker-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, var(--accent-b), var(--accent-a));
+			box-shadow: 0 0 0 6px rgba(124, 255, 168, 0.12);
+		}
+
+		.title {
+			margin: 14px 0 0;
+			font-family: "Space Grotesk", sans-serif;
+			font-size: clamp(2rem, 5vw, 4.25rem);
+			line-height: 0.98;
+			letter-spacing: -0.05em;
+			max-width: 11ch;
+		}
+
+		.subtitle {
+			margin: 14px 0 0;
+			max-width: 66ch;
+			font-size: 1.02rem;
+			line-height: 1.7;
+			color: var(--text-muted);
+		}
+
+		.hero-metrics {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 12px;
+			margin-top: 22px;
+		}
+
+		.metric {
+			padding: 16px;
+			border-radius: var(--radius-md);
+			border: 1px solid var(--line);
+			background: rgba(255, 255, 255, 0.05);
+		}
+
+		.metric-label {
+			font-size: 0.72rem;
+			letter-spacing: 0.14em;
+			text-transform: uppercase;
+			color: var(--text-muted);
+		}
+
+		.metric-value {
+			margin-top: 6px;
+			font-family: "Space Grotesk", sans-serif;
+			font-size: 1.3rem;
+			font-weight: 700;
+		}
+
+		.grid-wrap {
+			display: grid;
+			grid-template-columns: 1.15fr 0.85fr;
+			gap: 18px;
+		}
+
+		.panel {
+			padding: 18px;
+			border-radius: var(--radius-xl);
+			border: 1px solid var(--line);
+			background: var(--panel);
+			backdrop-filter: blur(16px);
+			box-shadow: var(--shadow);
+		}
+
+		.panel-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 10px;
+			margin-bottom: 16px;
+		}
+
+		.panel-title {
+			margin: 0;
+			font-family: "Space Grotesk", sans-serif;
+			font-size: 1.15rem;
+		}
+
+		.panel-subtitle {
+			margin: 6px 0 0;
+			color: var(--text-muted);
+			font-size: 0.92rem;
+			line-height: 1.5;
+		}
+
+		.pill {
+			padding: 8px 12px;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: rgba(255, 255, 255, 0.06);
+			font-size: 0.82rem;
+			color: #dbeafe;
+			white-space: nowrap;
+		}
+
+		.links-grid {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 14px;
+		}
+
+		.link-card {
+			position: relative;
+			padding: 18px;
+			border-radius: 22px;
+			border: 1px solid rgba(255, 255, 255, 0.11);
+			background: linear-gradient(160deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+			text-decoration: none;
+			color: var(--text-main);
+			overflow: hidden;
+			transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+			min-height: 176px;
+		}
+
+		.link-card::after {
+			content: "";
+			position: absolute;
+			inset: auto -12% -42% 18%;
+			height: 140px;
+			border-radius: 50%;
+			background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 72%);
+			pointer-events: none;
+		}
+
+		.link-card:hover {
+			transform: translateY(-3px);
+			border-color: rgba(124, 255, 168, 0.32);
+			box-shadow: 0 16px 40px rgba(0, 0, 0, 0.26);
+			background: linear-gradient(160deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05));
+		}
+
+		.link-top {
+			display: flex;
+			justify-content: space-between;
+			gap: 10px;
+			align-items: flex-start;
+			margin-bottom: 14px;
+		}
+
+		.link-badge {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 40px;
+			height: 40px;
+			border-radius: 14px;
+			font-family: "Space Grotesk", sans-serif;
+			font-weight: 700;
+			color: #08131f;
+			background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+			box-shadow: 0 10px 24px rgba(34, 211, 238, 0.18);
+		}
+
+		.link-title {
+			margin: 0;
+			font-family: "Space Grotesk", sans-serif;
+			font-size: 1.18rem;
+			line-height: 1.16;
+		}
+
+		.link-copy {
+			margin: 10px 0 0;
+			color: var(--text-muted);
+			font-size: 0.94rem;
+			line-height: 1.6;
+		}
+
+		.link-footer {
+			position: relative;
+			margin-top: 22px;
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			align-items: center;
+			font-size: 0.88rem;
+			color: #e5f2ff;
+		}
+
+		.link-chip {
+			padding: 7px 10px;
+			border-radius: 999px;
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			background: rgba(0, 0, 0, 0.15);
+			color: #eff8ff;
+			white-space: nowrap;
+		}
+
+		.side-stack {
+			display: grid;
+			gap: 18px;
+		}
+
+		.quick-list {
+			display: grid;
+			gap: 10px;
+		}
+
+		.quick-item {
+			display: flex;
+			justify-content: space-between;
+			gap: 12px;
+			align-items: center;
+			padding: 14px 15px;
+			border-radius: 18px;
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			background: rgba(255, 255, 255, 0.04);
+		}
+
+		.quick-name {
+			font-weight: 600;
+		}
+
+		.quick-desc {
+			margin-top: 4px;
+			font-size: 0.88rem;
+			color: var(--text-muted);
+		}
+
+		.quick-link {
+			color: var(--text-main);
+			text-decoration: none;
+			font-weight: 700;
+			font-size: 0.88rem;
+			white-space: nowrap;
+			padding: 8px 10px;
+			border-radius: 999px;
+			border: 1px solid rgba(124, 255, 168, 0.18);
+			background: rgba(124, 255, 168, 0.08);
+			transition: transform 160ms ease, background 160ms ease;
+		}
+
+		.quick-link:hover {
+			transform: translateY(-1px);
+			background: rgba(124, 255, 168, 0.13);
+		}
+
+		.footer-note {
+			padding: 0 4px 8px;
+			color: var(--text-muted);
+			font-size: 0.92rem;
+			text-align: center;
+		}
+
+		@keyframes drift {
+			0%,
+			100% {
+				transform: translate(0, 0) scale(1);
+			}
+			50% {
+				transform: translate(22px, -18px) scale(1.05);
+			}
+		}
+
+		@keyframes rise {
+			from {
+				opacity: 0;
+				transform: translateY(14px);
+			}
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@media (max-width: 860px) {
+			.grid-wrap {
+				grid-template-columns: 1fr;
+			}
+
+			.hero-metrics {
+				grid-template-columns: 1fr;
+			}
+
+			.links-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		@media (max-width: 640px) {
+			.shell {
+				width: min(100vw, 94vw);
+				padding-top: 16px;
+			}
+
+			.hero,
+			.panel {
+				padding: 16px;
+			}
+
+			.subtitle {
+				font-size: 0.96rem;
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after {
+				animation: none !important;
+				transition: none !important;
+				scroll-behavior: auto !important;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="noise"></div>
+	<div class="orb one"></div>
+	<div class="orb two"></div>
+	<div class="orb three"></div>
+
+	<main class="shell">
+
+
+		<div class="grid-wrap">
+			<section class="panel">
+				<div class="panel-header">
+					<div>
+						<h2 class="panel-title">Open a page</h2>
+						<p class="panel-subtitle">Tap any card to launch the matching screen.</p>
+					</div>
+					<div class="pill">Live shortcuts</div>
+				</div>
+
+				<div class="links-grid">
+					<a class="link-card" href="registration.html">
+						<div class="link-top">
+							<span class="link-badge">01</span>
+							<span class="link-chip">Start here</span>
+						</div>
+						<h3 class="link-title">Registration</h3>
+						<p class="link-copy">Check players in, collect phone numbers, and move straight into gear assignment.</p>
+						<div class="link-footer">
+							<span>Open the lobby flow</span>
+							<span>→</span>
+						</div>
+					</a>
+
+					<a class="link-card" href="scoring.html">
+						<div class="link-top">
+							<span class="link-badge">02</span>
+							<span class="link-chip">API test</span>
+						</div>
+						<h3 class="link-title">Scoring</h3>
+						<p class="link-copy">Test game start, strikes, and hole end responses with scorecard previews.</p>
+						<div class="link-footer">
+							<span>Open the tester</span>
+							<span>→</span>
+						</div>
+					</a>
+
+					<a class="link-card" href="activeleaderboard.html">
+						<div class="link-top">
+							<span class="link-badge">03</span>
+							<span class="link-chip">Live</span>
+						</div>
+						<h3 class="link-title">Active Leaderboard</h3>
+						<p class="link-copy">See players currently on the course, sorted by active progress and strokes.</p>
+						<div class="link-footer">
+							<span>Open the live board</span>
+							<span>→</span>
+						</div>
+					</a>
+
+					<a class="link-card" href="todaysleaderboard.html">
+						<div class="link-top">
+							<span class="link-badge">04</span>
+							<span class="link-chip">Daily</span>
+						</div>
+						<h3 class="link-title">Today’s Leaderboard</h3>
+						<p class="link-copy">View the daily rankings and the best scores from the current session.</p>
+						<div class="link-footer">
+							<span>Open today’s rankings</span>
+							<span>→</span>
+						</div>
+					</a>
+
+					<a class="link-card" href="history.html">
+						<div class="link-top">
+							<span class="link-badge">05</span>
+							<span class="link-chip">Archive</span>
+						</div>
+						<h3 class="link-title">Game History</h3>
+						<p class="link-copy">Browse past matches, top performances, and the full archived table.</p>
+						<div class="link-footer">
+							<span>Open match history</span>
+							<span>→</span>
+						</div>
+					</a>
+				</div>
+			</section>
+
+			
+		</div>
+
+	</main>
+</body>
+</html>
